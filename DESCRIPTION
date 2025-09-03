@@ -1,7 +1,7 @@
 Package: statxplorerplus
 Type: Package
 Title: Tools for Stat-Xplore Style Specs, Labels, and JSON Conversion
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(person(given = "Your", family = "Name", role = c("aut", "cre"), email = "you@example.com"))
 Description: Helper utilities to transform Stat-Xplore-style JSON specs to/from tables,
     resolve labels to IDs via API schema traversal, update spec tables to latest available
