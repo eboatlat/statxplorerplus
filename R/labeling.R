@@ -1,0 +1,49 @@
+#' Traverse down from a URL to collect target types
+#' @export
+get_target_type_info_below<-function(.url, .target_types, .max_iterations=10){
+  target_info<-tibble::tibble(); paths<-.url
+  for(i in 1:.max_iterations){
+    nextlevel<-purrr::map(paths, ~get_next_level_info(.x, error_if_next_level_empty = FALSE))|> dplyr::bind_rows()
+    target_info<-dplyr::bind_rows(target_info, nextlevel|>dplyr::filter(type%in%.target_types))
+    paths<-nextlevel|> dplyr::filter(!type%in%.target_types)|> dplyr::pull(location)
+    if (is.vector(paths) && length(paths) == 0) break
+  }
+  target_info
+}
+
+#' Enrich a spec table with labels and locations
+#' @export
+add_labels_and_locations_to_spec_table<-function(.input_tbl, .db_tbl=NULL){
+  db_id<-.input_tbl|> dplyr::distinct(database_id)|> dplyr::pull()
+  if(length(db_id)>1) stop("Must only be one value for database in table")
+  dbs <- if(!is.null(.db_tbl)) .db_tbl else list_databases()
+  db_location<-dbs|> dplyr::filter(id==db_id)|> dplyr::pull(location)
+  db_info<-get_schema_info(db_location)
+  db_child_info<-get_target_type_info_below(db_location, .target_types=c("MEASURE","COUNT","FIELD"))
+  measure_id<-.input_tbl|> dplyr::distinct(measure_id)|> dplyr::pull()
+  if(length(measure_id)>1) stop("Must only be one measure for database in table")
+  measure_info<-db_child_info|> dplyr::filter(id==measure_id)|>
+    dplyr::rename_with(~paste0("measure_",.x))|> dplyr::select(-measure_type)|>
+    convert_list_column_to_string(list_col_name="measure_functions")
+  field_ids<-.input_tbl|> dplyr::distinct(field_id)|> dplyr::pull()
+  fields_info<-db_child_info|> dplyr::filter(id%in%field_ids)|>
+    dplyr::rename_with(~paste0("field_",.x))|> dplyr::select(-field_type)|>
+    convert_list_column_to_string(list_col_name="field_functions")
+  values_info<-purrr::map(fields_info$field_location, ~get_target_type_info_below(.url=.x, .target_types="VALUE"))|> dplyr::bind_rows()|>
+    dplyr::select(-type)|> dplyr::rename_with(~paste0("value_",.x))
+  valueset_info<-purrr::map(fields_info$field_location, ~get_target_type_info_below(.url=.x, .target_types="VALUESET"))|> dplyr::bind_rows()|>
+    dplyr::select(-type)|> dplyr::rename_with(~paste0("valueset_",.x))
+  out_tbl<-.input_tbl
+  db_info_for_join<-db_info|> dplyr::select(id,location,label)|> dplyr::distinct()|>
+    dplyr::rename_with(~paste0("database_",.x), dplyr::everything())
+  out_tbl<-dplyr::left_join(out_tbl, db_info_for_join, by=c("database_id"), relationship="many-to-one")
+  out_tbl<-dplyr::left_join(out_tbl, measure_info, by=c("measure_id"), relationship="many-to-one")
+  out_tbl<-dplyr::left_join(out_tbl, fields_info, by=c("field_id"), relationship="many-to-one")
+  out_tbl<-out_tbl|>
+    dplyr::mutate(valueset_id=stringr::str_replace(value_id,"str:value:","str:valueset:"),
+                  valueset_id=stringr::str_replace(valueset_id,":[^:]*$",""))
+  out_tbl<-dplyr::left_join(out_tbl, valueset_info, by=c("valueset_id"), relationship="many-to-one")
+  out_tbl<-dplyr::left_join(out_tbl, values_info, by=c("value_id"), relationship="one-to-one")
+  if(nrow(out_tbl|> dplyr::filter(is.na(value_label)))) warning("Value label missing for some values. For MSOA/LSOA/OA data use value_code instead")
+  dplyr::mutate(out_tbl, value_code=stringr::str_extract(value_id,"[^:]*$"))
+}

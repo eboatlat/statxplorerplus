@@ -1,0 +1,32 @@
+Package: statxplorerplus
+Type: Package
+Title: Tools for Stat-Xplore Style Specs, Labels, and JSON Conversion
+Version: 0.3.0
+Authors@R: c(person(given = "Your", family = "Name", role = c("aut", "cre"), email = "you@example.com"))
+Description: Helper utilities to transform Stat-Xplore-style JSON specs to/from tables,
+    resolve labels to IDs via API schema traversal, update spec tables to latest available
+    dates, and export corrected JSON for downstream use.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends: R (>= 4.1)
+Imports:
+    dplyr,
+    tibble,
+    purrr,
+    jsonlite,
+    httr,
+    janitor,
+    stringr,
+    fuzzyjoin,
+    tidyr,
+    lubridate
+Suggests:
+    testthat (>= 3.0.0),
+    roxygen2,
+    devtools,
+    pkgdown
+Config/testthat/edition: 3
+URL: https://example.com/statxplorerplus
+BugReports: https://example.com/statxplorerplus/issues
