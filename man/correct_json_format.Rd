@@ -4,8 +4,9 @@
 \alias{correct_json_format}
 \title{Correct JSON formatting quirks}
 \usage{
-correct_json_format(.input_file, .output_file)
+correct_json_format(.input_file, .output_file, remove_total_rows = T)
 }
 \description{
 Correct JSON formatting quirks
 }
+\keyword{internal}

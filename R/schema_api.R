@@ -1,3 +1,11 @@
+
+
+#CONSTANTS-----------
+
+SCHEMA_URL<-"https://stat-xplore.dwp.gov.uk/webapi/rest/v1/schema"
+
+#FUNCTIONS--------
+
 #' Fetch schema info (with pagination via Link header)
 #' @param url Starting URL to fetch.
 #' @param pages Maximum pages to traverse.
@@ -48,8 +56,8 @@ get_next_level_info<-function(url, error_if_next_level_empty=TRUE){
 
 #' List databases from the configured base URL
 #' @export
-list_databases <- function(base_path = get_base_url()) {
-  paths <- get_base_url()
+list_databases <- function(base_path = SCHEMA_URL) {
+  paths <- SCHEMA_URL
   databases <- tibble::tibble()
   for (i in 1:10) {
     next_level <- purrr::map(paths, ~get_next_level_info(.x, error_if_next_level_empty = FALSE)) |> dplyr::bind_rows()

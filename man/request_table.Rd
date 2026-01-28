@@ -4,10 +4,12 @@
 \alias{request_table}
 \title{Send an http request with a query and return the response}
 \usage{
-request_table(query)
+request_table(query, timeout = 600)
 }
 \arguments{
 \item{query}{A valid Stat-Xplore query as a string.}
+
+\item{timeout}{Length to wait before timing out (seconds)}
 }
 \value{
 A list of the query results as parsed json.

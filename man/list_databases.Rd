@@ -4,7 +4,7 @@
 \alias{list_databases}
 \title{List databases from the configured base URL}
 \usage{
-list_databases(base_path = get_base_url())
+list_databases(base_path = SCHEMA_URL)
 }
 \description{
 List databases from the configured base URL

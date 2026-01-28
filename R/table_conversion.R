@@ -14,7 +14,7 @@ put_grouped_variable_mapping_into_table<-function(.mapping, .fieldname){
 #' @param .json_path Path to the JSON file.
 #' @return Tibble with ids per field/value (incl. value_group when grouped).
 #' @export
-convert_json_to_table<-function(.json_path){
+convert_json_to_spec_table<-function(.json_path){
   json_text<-readLines(.json_path, warn=FALSE)
   data<-jsonlite::fromJSON(paste0(json_text, collapse="\n"))
   database<-data$database
@@ -37,19 +37,36 @@ convert_json_to_table<-function(.json_path){
 construct_mapping_for_indiv_var<-function(.tbl){
   field <- .tbl |> dplyr::distinct(field_id) |> dplyr::pull()
   if(length(field)>1) stop("Table has more than one value for field column in it.")
-  groups <- .tbl |> dplyr::distinct(value_group) |> dplyr::pull()
-  if(length(groups)==1){
+  if(!"value_group"%in%names(.tbl)){
+    .tbl<-.tbl|>
+      dplyr::mutate(value_group=NA)
+  }
+  groups <- .tbl |> 
+      tidyr::drop_na(value_group)|>
+      dplyr::distinct(value_group) |> 
+      dplyr::pull()
+  
+  #throw error if there are some nas but not all NAs in group variable
+  groups_with_na<-.tbl|>
+    dplyr::distinct(value_group) |>
+    dplyr::pull()
+  
+  if(length(groups!=0)&(length(groups_with_na)!=length(groups))){
+    stop(paste0("Combination of grouped and non-grouped values for field", field))
+  }
+  
+  if(length(groups)==0){
     values <- .tbl |> dplyr::distinct(value_id) |> dplyr::pull()
-    list(map = matrix(values, ncol = 1), total = FALSE)
+    out<- list(map = matrix(values, ncol = 1), total = FALSE)
   } else {
     vals <- lapply(groups, function(g) .tbl |> dplyr::filter(value_group==g) |> dplyr::distinct(value_id) |> dplyr::pull())
-    list(map = vals, total = FALSE)
+    out<- list(map = vals, total = FALSE)
   }
 }
 
-#' Convert a tidy table to JSON (list form)
+#' Convert a tidy table to a list (which is exportable to a json)
 #' @export
-convert_table_to_json<-function(.table){
+convert_spec_table_to_list<-function(.table){
   database <- .table |> dplyr::distinct(database_id) |> dplyr::pull()
   if(length(database)>1) stop("Table references more than one database")
   measure <- .table |> dplyr::distinct(measure_id) |> dplyr::pull()

@@ -15,10 +15,12 @@ URL_TABLE <- "https://stat-xplore.dwp.gov.uk/webapi/rest/v1/table"
 #' error is raised with the response text.
 #'
 #' @param query A valid Stat-Xplore query as a string.
+#' @param timeout Length to wait before timing out (seconds)
 #' @return A list of the query results as parsed json.
 #' @export
 
-request_table <- function(query) {
+request_table <- function(query,
+                          timeout = 600) {
 
     # Get api key from cache
     api_key <- get_api_key()
@@ -35,7 +37,7 @@ request_table <- function(query) {
             headers,
             body = query,
             encode = "form",
-            timeout = 60)},
+            timeout = timeout)},
         error = function(c) {
             stop("Could not connect to Stat-Xplore: the server may be down")
         })
@@ -86,17 +88,81 @@ request_table <- function(query) {
 #'   labels explicitly using this argument when your query uses custom
 #'   aggregate variables, as the number of variables in the results will not
 #'   agree with the number of variables shown in the metadata.
+#' @param timeout Length to wait before timing out (seconds)
+#' @param only_keep_data Whether to only output the dataset
+#' @param drop_total_rows Whether to drop total rows (defaults to keeping them)
 #' @return A list containing the results of the query, with one item per cube.
 #' @export
 
-fetch_table <- function(query, filename = NULL, custom = NULL) {
+fetch_table <- function(query, filename = NULL, custom = NULL,
+                        timeout = 600,
+                        only_keep_data=T,
+                        drop_total_rows=F) {
 
     # Read the query from a file if given
     if (! is.null(filename)) query <- readr::read_file(filename)
-
+    
+    #drop the rows with totals in them by importing and re-exporting
+    if(drop_total_rows==T){
+      tmpfile<-tempfile()
+      json_list<-jsonlite::fromJSON(query)
+      #export_json function automatically deletes total rows
+      export_json(json_list,tmpfile)
+      query<-readr::read_file(tmpfile)
+    }
+    
     # Send the query and get the response
-    response_json <- request_table(query)
+    response_json <- request_table(query,
+                                   timeout=timeout)
 
     # Extract results
-    extract_results(response_json, custom)
+    out<-extract_results(response_json, custom)
+    
+    if(only_keep_data){
+      out<-out$dfs[[1]]
+    }
+    return(out)
+}
+
+
+#'@export 
+fetch_data_from_spec_table<-function(spec_table,
+                                     timeout=600,
+                                     only_keep_data=T){
+  #arrange spec table so custom mappings will work 
+  if(!"value_group"%in%names(spec_table)){
+    spec_table<-spec_table|>
+      dplyr::mutate(value_group=NA)
+  }
+  spec_table<-spec_table|>
+    dplyr::arrange(field_id,value_group)
+  
+  mapping_df<-spec_table|>
+    tidyr::drop_na(value_group)|>
+    dplyr::distinct(value_group,field_label)
+  
+  mapping_field_names<-mapping_df|>
+    dplyr::distinct(field_label)|>
+    dplyr::pull()
+  
+  mapping<-purrr::map(mapping_field_names,
+                      ~mapping_df|>
+                        dplyr::filter(field_label==.x)|>
+                        dplyr::pull(value_group))
+  names(mapping)<-mapping_field_names
+  
+  temp_path<-tempfile(fileext=".json")
+  
+  #now export the spec_table to the temp path
+  spec_list<-convert_spec_table_to_list(spec_table)
+  export_json(spec_list,temp_path)
+  
+  #and fetch from that temp_path
+  out<-fetch_table(filename=temp_path,
+                   custom=mapping,
+                   timeout=timeout,
+                   only_keep_data=only_keep_data)
+  
+  return(out)
+  
 }

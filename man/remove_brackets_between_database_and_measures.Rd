@@ -9,3 +9,4 @@ remove_brackets_between_database_and_measures(.input_string)
 \description{
 Remove brackets between database and measures
 }
+\keyword{internal}

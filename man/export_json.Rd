@@ -4,7 +4,7 @@
 \alias{export_json}
 \title{Export a JSON spec with corrections}
 \usage{
-export_json(.json, .output_path)
+export_json(.json, .output_path, remove_total_rows = T)
 }
 \description{
 Export a JSON spec with corrections

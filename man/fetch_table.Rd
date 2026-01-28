@@ -4,7 +4,14 @@
 \alias{fetch_table}
 \title{Send a table query and return the results}
 \usage{
-fetch_table(query, filename = NULL, custom = NULL)
+fetch_table(
+  query,
+  filename = NULL,
+  custom = NULL,
+  timeout = 600,
+  only_keep_data = T,
+  drop_total_rows = T
+)
 }
 \arguments{
 \item{query}{Stat-Xplore query as a string.}
@@ -19,6 +26,12 @@ constructing the results dataframes. It is necessary to specify item
 labels explicitly using this argument when your query uses custom
 aggregate variables, as the number of variables in the results will not
 agree with the number of variables shown in the metadata.}
+
+\item{timeout}{Length to wait before timing out (seconds)}
+
+\item{only_keep_data}{Whether to only output the dataset}
+
+\item{drop_total_rows}{Whether to drop total rows}
 }
 \value{
 A list containing the results of the query, with one item per cube.
