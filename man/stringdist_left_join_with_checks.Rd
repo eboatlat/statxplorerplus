@@ -13,6 +13,32 @@ stringdist_left_join_with_checks(
   .name_of_merge = "key"
 )
 }
+\arguments{
+\item{.left_df}{Left-hand data frame.}
+
+\item{.right_df}{Right-hand data frame.}
+
+\item{.max_distance}{Maximum string distance allowed.}
+
+\item{.by}{Join specification passed to \code{\link[fuzzyjoin:stringdist_join]{fuzzyjoin::stringdist_left_join()}}.}
+
+\item{.no_duplicates}{If \code{TRUE}, require one-to-one matching.}
+
+\item{.name_of_merge}{Friendly name used in messages (e.g. "database").}
+}
+\value{
+A tibble/data frame containing the joined columns and \code{exact_match}.
+}
 \description{
-Fuzzy left join with safety checks
+Wrapper around \code{\link[fuzzyjoin:stringdist_join]{fuzzyjoin::stringdist_left_join()}} that:
+\itemize{
+\item keeps only the best (minimum distance) match per left row,
+\item errors if any left key has no match,
+\item optionally errors if the best match is not one-to-one,
+\item warns when any match is inexact (distance > 0).
+}
+}
+\details{
+The output includes an \code{exact_match} flag and renames left-hand key columns to
+\verb{*.input} to preserve both versions of the join keys.
 }

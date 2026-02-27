@@ -2,18 +2,25 @@
 % Please edit documentation in R/schema_api.R
 \name{get_schema_info}
 \alias{get_schema_info}
-\title{Fetch schema info (with pagination via Link header)}
+\title{Fetch schema information (supports pagination via \code{Link} header)}
 \usage{
 get_schema_info(url, pages = 10)
 }
 \arguments{
-\item{url}{Starting URL to fetch.}
+\item{url}{A schema URL to fetch (e.g. a database or field location).}
 
-\item{pages}{Maximum pages to traverse.}
+\item{pages}{Maximum number of pages to traverse when following \code{rel="next"}.}
 }
 \value{
-Tibble of schema info (flattened).
+A tibble containing flattened schema information.
 }
 \description{
-Fetch schema info (with pagination via Link header)
+Calls a Stat-Xplore schema URL and returns the parsed response as a tibble.
+Some schema endpoints return a \code{children} array. When present, this function
+flattens the response by cross-joining the parent record to each child and
+prefixing child columns with \code{child_}.
+}
+\details{
+If the endpoint is paginated, Stat-Xplore supplies a \code{Link} header containing
+a \code{rel="next"} URL. This function follows that URL up to \code{pages} times.
 }

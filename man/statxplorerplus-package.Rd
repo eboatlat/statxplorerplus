@@ -10,9 +10,6 @@ The statxplorerplus package provides a suite of functions for
 constructing queries and downloading data
 from the Department for Work and Pensions Stat-Xplore API.
 }
-\details{
-#' @keywords internal
-}
 \seealso{
 Useful links:
 \itemize{
@@ -25,3 +22,4 @@ Useful links:
 \strong{Maintainer}: Your Name \email{you@example.com}
 
 }
+\keyword{internal}

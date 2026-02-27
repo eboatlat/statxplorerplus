@@ -2,10 +2,21 @@
 % Please edit documentation in R/schema_api.R
 \name{get_next_level_info}
 \alias{get_next_level_info}
-\title{Get next-level info below a schema URL}
+\title{Get the next level of schema children below a URL}
 \usage{
 get_next_level_info(url, error_if_next_level_empty = TRUE)
 }
+\arguments{
+\item{url}{A schema URL to fetch.}
+
+\item{error_if_next_level_empty}{If \code{TRUE} (default), error when the response
+contains no \code{children}. If \code{FALSE}, return an empty tibble.}
+}
+\value{
+A tibble of child records (with columns such as \code{id}, \code{label},
+\code{type}, \code{location}, ...), or an empty tibble.
+}
 \description{
-Get next-level info below a schema URL
+Convenience wrapper around \code{\link[=get_schema_info]{get_schema_info()}} that returns only child rows,
+with column names de-prefixed from \code{child_} to the base names.
 }

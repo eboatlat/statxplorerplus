@@ -2,16 +2,20 @@
 % Please edit documentation in R/table_conversion.R
 \name{convert_json_to_spec_table}
 \alias{convert_json_to_spec_table}
-\title{Convert a JSON spec to a tidy table}
+\title{Convert a JSON spec file to a tidy spec table}
 \usage{
 convert_json_to_spec_table(.json_path)
 }
 \arguments{
-\item{.json_path}{Path to the JSON file.}
+\item{.json_path}{Path to a JSON spec file exported from Stat-Xplore.}
 }
 \value{
-Tibble with ids per field/value (incl. value_group when grouped).
+A tibble referred to as "spec table" with columns \code{database_id}, \code{measure_id}, \code{field_id},
+\code{value_id}, and (when grouped recodes exist) \code{value_group}.
 }
 \description{
-Convert a JSON spec to a tidy table
+Reads a Stat-Xplore JSON query/spec file and converts it to a table where
+each row corresponds to a single field/value selection. Grouped recodes are
+supported; when encountered, group names are auto-generated (\code{group1},
+\code{group2}, ...).
 }

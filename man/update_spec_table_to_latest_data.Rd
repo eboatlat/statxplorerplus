@@ -4,8 +4,24 @@
 \alias{update_spec_table_to_latest_data}
 \title{Update a spec table to include newer dates}
 \usage{
-update_spec_table_to_latest_data(.input_tbl)
+update_spec_table_to_latest_data(.input_tbl, .add_only_newer_dates = TRUE)
+}
+\arguments{
+\item{.input_tbl}{A spec table with at least \code{database_id}, \code{measure_id},
+\code{field_id}, and \code{value_id}.}
+
+\item{.add_only_newer_dates}{A binary choice as to whether only add in new data}
+}
+\value{
+A spec table with extra rows for newly available dates.
 }
 \description{
-Update a spec table to include newer dates
+Given a tidy spec table (as used by \code{\link[=fetch_data_from_spec_table]{fetch_data_from_spec_table()}}), this
+function detects the date field (by attempting to parse \code{value_label} as a
+month-year using \code{\link[lubridate:ymd]{lubridate::my()}}) and appends any additional available date
+values (can select to only add newer dates.
+}
+\details{
+The returned table contains only \verb{*_id} columns, ready to be converted back
+into a JSON spec via \code{\link[=convert_spec_table_to_list]{convert_spec_table_to_list()}}.
 }

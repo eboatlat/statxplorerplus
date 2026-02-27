@@ -5,7 +5,7 @@
 #' from the Department for Work and Pensions Stat-Xplore API.
 #'
 #' 
-#' #' @keywords internal
+#' @keywords internal
 "_PACKAGE"
 #' @name statxplorerplus
 #' @importFrom magrittr %>%

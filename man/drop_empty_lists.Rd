@@ -13,5 +13,7 @@ drop_empty_lists(x)
 The same list structure with zero-length lists removed.
 }
 \description{
-Drop empty lists recursively
+Removes elements that are themselves lists of length 0, recursing down
+through nested lists.
 }
+\keyword{internal}

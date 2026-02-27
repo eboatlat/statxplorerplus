@@ -2,10 +2,29 @@
 % Please edit documentation in R/labeling.R
 \name{add_labels_and_locations_to_spec_table}
 \alias{add_labels_and_locations_to_spec_table}
-\title{Enrich a spec table with labels and locations}
+\title{Enrich a spec table with labels and schema locations}
 \usage{
 add_labels_and_locations_to_spec_table(.input_tbl, .db_tbl = NULL)
 }
+\arguments{
+\item{.input_tbl}{A spec table with \code{database_id}, \code{measure_id}, \code{field_id},
+and \code{value_id}.}
+
+\item{.db_tbl}{Optional tibble of databases as returned by \code{\link[=list_databases]{list_databases()}}.
+Supplying this avoids re-fetching the database list.}
+}
+\value{
+A tibble containing the input columns plus \verb{*_label}, \verb{*_location},
+and helper fields such as \code{value_code}. Columns are prefixed with
+\code{database_}, \code{measure_}, \code{field_}, \code{valueset_}, and \code{value_}.
+}
 \description{
-Enrich a spec table with labels and locations
+Takes a tidy spec table with \verb{*_id} columns and joins on human-readable
+labels and schema \code{location} URLs for the database, measure, fields, and
+values.
+}
+\details{
+This is primarily intended to support workflows that start from ids (e.g.
+\code{\link[=convert_json_to_spec_table]{convert_json_to_spec_table()}}) and need labels for matching, auditing, or
+exporting.
 }

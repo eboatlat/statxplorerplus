@@ -2,11 +2,19 @@
 % Please edit documentation in R/json_helpers.R
 \name{remove_brackets_between_database_and_measures}
 \alias{remove_brackets_between_database_and_measures}
-\title{Remove brackets between database and measures}
+\title{Remove brackets between \code{database} and \code{measures}}
 \usage{
 remove_brackets_between_database_and_measures(.input_string)
 }
+\arguments{
+\item{.input_string}{A JSON string.}
+}
+\value{
+A JSON string with the bracketed section corrected.
+}
 \description{
-Remove brackets between database and measures
+Some exported JSON contains an unexpected bracketed section between the
+\code{"database"} and \code{"measures"} keys. This helper strips square brackets from
+that section using a regex.
 }
 \keyword{internal}

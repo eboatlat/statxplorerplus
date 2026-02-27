@@ -2,6 +2,7 @@
 
 export(add_codes_for_field)
 export(add_labels_and_locations_to_spec_table)
+export(construct_custom_var_mapping_from_spec_table)
 export(convert_json_to_spec_table)
 export(convert_labels_table_to_spec_table)
 export(convert_spec_table_to_list)

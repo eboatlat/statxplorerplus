@@ -2,10 +2,22 @@
 % Please edit documentation in R/json_helpers.R
 \name{export_json}
 \alias{export_json}
-\title{Export a JSON spec with corrections}
+\title{Export a JSON spec with post-processing corrections}
 \usage{
-export_json(.json, .output_path, remove_total_rows = T)
+export_json(.json, .output_path, remove_total_rows = TRUE)
+}
+\arguments{
+\item{.json}{A list representing a Stat-Xplore JSON query/spec.}
+
+\item{.output_path}{File path to write the JSON.}
+
+\item{remove_total_rows}{If \code{TRUE}, force totals off after writing.}
+}
+\value{
+Invisibly returns \code{NULL}. Writes a JSON file to \code{.output_path}.
 }
 \description{
-Export a JSON spec with corrections
+Writes a JSON spec to disk (pretty-printed) and then runs
+\code{\link[=correct_json_format]{correct_json_format()}} to normalise formatting quirks. This is also used to
+optionally remove total rows by forcing all \code{total} flags to \code{FALSE}.
 }

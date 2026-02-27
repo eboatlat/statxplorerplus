@@ -2,7 +2,7 @@
 % Please edit documentation in R/fuzzy_and_labels.R
 \name{convert_labels_table_to_spec_table}
 \alias{convert_labels_table_to_spec_table}
-\title{Convert labels table to spec table with IDs}
+\title{Convert a labels table to a spec table with ids (using fuzzy matching)}
 \usage{
 convert_labels_table_to_spec_table(
   .input_tbl,
@@ -10,6 +10,23 @@ convert_labels_table_to_spec_table(
   .max_distance = 1
 )
 }
+\arguments{
+\item{.input_tbl}{A tibble containing label columns that describe a query.
+Expected columns include \code{database_label}, \code{measure_label}, \code{field_label},
+and either \code{value_label} or \code{value_code} (depending on the dataset).}
+
+\item{.db_tbl}{Optional databases table from \code{\link[=list_databases]{list_databases()}}; supplying
+avoids an extra API call.}
+
+\item{.max_distance}{Maximum string distance allowed for matches.}
+}
+\value{
+A spec table (tibble) with \code{database_id}, \code{measure_id}, \code{field_id},
+\code{value_id}, and match diagnostics (e.g. \verb{*_exact_match}).
+}
 \description{
-Convert labels table to spec table with IDs
+Uses \code{\link[=list_databases]{list_databases()}} and the schema endpoints to translate human-readable
+\verb{*_label} columns into Stat-Xplore \verb{*_id} columns. Matching is done using
+\code{\link[=stringdist_left_join_with_checks]{stringdist_left_join_with_checks()}} and will error when a label cannot be
+matched within \code{.max_distance}.
 }

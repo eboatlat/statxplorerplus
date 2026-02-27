@@ -2,11 +2,24 @@
 % Please edit documentation in R/json_helpers.R
 \name{correct_json_format}
 \alias{correct_json_format}
-\title{Correct JSON formatting quirks}
+\title{Correct JSON formatting quirks after export}
 \usage{
-correct_json_format(.input_file, .output_file, remove_total_rows = T)
+correct_json_format(.input_file, .output_file, remove_total_rows = TRUE)
+}
+\arguments{
+\item{.input_file}{Path to the JSON file to read.}
+
+\item{.output_file}{Path to write the corrected JSON.}
+
+\item{remove_total_rows}{If \code{TRUE}, force totals off by replacing \code{true} with
+\code{false} throughout the JSON text.}
+}
+\value{
+Invisibly returns \code{NULL}. Writes a corrected JSON file to disk.
 }
 \description{
-Correct JSON formatting quirks
+Stat-Xplore exports occasionally contain some awkward constructs (e.g.
+\verb{[true]} / \verb{[false]}). This helper normalises those patterns and optionally
+forces all \code{total} flags to \code{FALSE} to remove total rows.
 }
 \keyword{internal}

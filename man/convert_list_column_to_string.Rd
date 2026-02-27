@@ -14,8 +14,10 @@ convert_list_column_to_string(df, list_col_name, sep = "_")
 \item{sep}{Separator used to collapse list elements.}
 }
 \value{
-\code{df} with the column replaced by character values.
+\code{df} with the list-column replaced by character values.
 }
 \description{
-Convert a list-column to strings
+Collapses each element of a list-column into a single character string using
+\code{sep}. \code{NULL} values become \code{NA}, and empty vectors become \code{""}.
 }
+\keyword{internal}

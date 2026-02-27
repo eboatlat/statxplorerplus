@@ -2,10 +2,17 @@
 % Please edit documentation in R/schema_api.R
 \name{list_databases}
 \alias{list_databases}
-\title{List databases from the configured base URL}
+\title{List available databases}
 \usage{
 list_databases(base_path = SCHEMA_URL)
 }
+\arguments{
+\item{base_path}{Schema root URL to start from. Defaults to \link{SCHEMA_URL}.}
+}
+\value{
+A tibble of databases (including \code{id}, \code{label}, and \code{location}).
+}
 \description{
-List databases from the configured base URL
+Walks the schema tree starting at \code{base_path} and returns records whose
+\code{type} equals \code{"DATABASE"}.
 }

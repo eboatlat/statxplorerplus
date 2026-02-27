@@ -2,10 +2,24 @@
 % Please edit documentation in R/table_conversion.R
 \name{convert_spec_table_to_list}
 \alias{convert_spec_table_to_list}
-\title{Convert a tidy table to a list (which is exportable to a json)}
+\title{Convert a tidy "spec table" to a list suitable for JSON export}
 \usage{
 convert_spec_table_to_list(.table)
 }
+\arguments{
+\item{.table}{A spec table with at least \code{database_id}, \code{measure_id},
+\code{field_id}, and \code{value_id} columns. Optional \code{value_group} is used to
+create grouped recodes.}
+}
+\value{
+A list with elements \code{database}, \code{measures}, \code{recodes}, and
+\code{dimensions}.
+}
 \description{
-Convert a tidy table to a list (which is exportable to a json)
+The returned list matches the Stat-Xplore JSON spec structure and can be
+written using \code{\link[=export_json]{export_json()}}.
+}
+\details{
+Note that if the spec table has information on the grouping of values that is lost
+through this transformation.
 }

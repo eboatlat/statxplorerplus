@@ -2,167 +2,222 @@
 
 # Constants -------------------------------------------------------------------
 
+#' Stat-Xplore API info endpoint
+#' @keywords internal
 URL_INFO <- "https://stat-xplore.dwp.gov.uk/webapi/rest/v1/info"
+
+#' Stat-Xplore API table endpoint
+#' @keywords internal
 URL_TABLE <- "https://stat-xplore.dwp.gov.uk/webapi/rest/v1/table"
 
 # Functions -------------------------------------------------------------------
 
-#' Send an http request with a query and return the response
+#' Send a Stat-Xplore table request and return parsed JSON
 #'
-#' \code{request_table} sends a query to the table endpoint, checks the
-#' response, parses the response text as json, and returns the parsed data. If
-#' the query syntax is not valid or the request fails for any other reason an
-#' error is raised with the response text.
+#' Posts a JSON query to the Stat-Xplore `table` endpoint, validates the HTTP
+#' response, and returns the parsed JSON as an R list.
 #'
-#' @param query A valid Stat-Xplore query as a string.
-#' @param timeout Length to wait before timing out (seconds)
-#' @return A list of the query results as parsed json.
+#' The function retries on HTTP 504 Gateway Timeout up to `attempts` times.
+#' For other non-200 responses it errors with the response body to help
+#' debugging invalid queries.
+#'
+#' @param query A valid Stat-Xplore query as a JSON string.
+#' @param timeout Number of seconds to wait before timing out.
+#' @param attempts Maximum number of attempts (only retries on 504 responses).
+#'
+#' @return A list representation of the JSON response (not simplified).
 #' @export
-
 request_table <- function(query,
-                          timeout = 600) {
+                          timeout = 600,
+                          attempts = 10) {
 
-    # Get api key from cache
-    api_key <- get_api_key()
+  # Get api key from cache
+  api_key <- get_api_key()
 
-    # Set headers
-    headers <- httr::add_headers(
-        "APIKey" = api_key,
-        "Content-Type" = "application/json")
+  # Set headers
+  headers <- httr::add_headers(
+    "APIKey" = api_key,
+    "Content-Type" = "application/json"
+  )
+
+  attno <- 0
+  while (attno < attempts) {
+    attno <- attno + 1
 
     # POST and return
-    tryCatch({
-        response <- httr::POST(
-            URL_TABLE,
-            headers,
-            body = query,
-            encode = "form",
-            timeout = timeout)},
-        error = function(c) {
-            stop("Could not connect to Stat-Xplore: the server may be down")
-        })
+    response <- tryCatch(
+      httr::POST(
+        URL_TABLE,
+        headers,
+        body = query,
+        encode = "form",
+        timeout = timeout
+      ),
+      error = function(c) {
+        stop("Could not connect to Stat-Xplore: the server may be down")
+      }
+    )
 
     # Extract the text
     response_text <- httr::content(response, as = "text", encoding = "utf-8")
 
+    # If gateway error try again
+    if ((response$status_code == 504) && (attno < attempts)) {
+      warning(stringr::str_glue(
+        "504 Gateway Error. Attempt {attno}. Will retry"
+      ))
+      next
+    }
+
     # If the server returned an error raise it with the response text
     if (response$status_code != 200) {
-        stop(stringr::str_glue(
-            "The server responded with the error message: {response_text}"))
+      stop(stringr::str_glue(
+        "Stopping: The server responded with the error message: {response_text}"
+      ))
     }
 
-    # Process the JSON, and return
-    jsonlite::fromJSON(response_text, simplifyVector = FALSE)
-}
-
-#' Send a table query and return the results
-#'
-#' \code{fetch_table} sends a query to the table endpoint and returns the
-#' response as a list containing the results. The results include a dataframe
-#' of tidy data for each measure requested by the query.
-#'
-#' A query can be provided as a string or can be loaded from a file using the
-#' \code{filename} argument. This is sometimes convenient as Stat-Xplore
-#' queries can be large and are most easily produced using the table builder
-#' tool on the website, which exports queries as json text files.
-#'
-#' Stat-Xplore returns one set of results for each measure included in a query.
-#' Each set of results includes data for different measures on the same set of
-#' observations.
-#'
-#' The list of results has the following structure:
-#'
-#' measures - the names of the measures for each dataset (character)
-#' fields - the names of categorical variables included in the data (character)
-#' items - the names of the categories or levels within each field (list)
-#' uris - the uris of the categories or levels within each field (list)
-#' dfs - a dataframe for each measure with the data in long form (list)
-#'
-#' @param query Stat-Xplore query as a string.
-#' @param filename The path to a text file containing a Stat-Xplore query.
-#'   This argument is not required but has priority: if a \code{filename} is
-#'   provided, the \code{query} argument is ignored.
-#' @param custom A named list of character vectors. Each name/value pair
-#'   indicates the item labels to use for the field with the given name when
-#'   constructing the results dataframes. It is necessary to specify item
-#'   labels explicitly using this argument when your query uses custom
-#'   aggregate variables, as the number of variables in the results will not
-#'   agree with the number of variables shown in the metadata.
-#' @param timeout Length to wait before timing out (seconds)
-#' @param only_keep_data Whether to only output the dataset
-#' @param drop_total_rows Whether to drop total rows (defaults to keeping them)
-#' @return A list containing the results of the query, with one item per cube.
-#' @export
-
-fetch_table <- function(query, filename = NULL, custom = NULL,
-                        timeout = 600,
-                        only_keep_data=T,
-                        drop_total_rows=F) {
-
-    # Read the query from a file if given
-    if (! is.null(filename)) query <- readr::read_file(filename)
-    
-    #drop the rows with totals in them by importing and re-exporting
-    if(drop_total_rows==T){
-      tmpfile<-tempfile()
-      json_list<-jsonlite::fromJSON(query)
-      #export_json function automatically deletes total rows
-      export_json(json_list,tmpfile)
-      query<-readr::read_file(tmpfile)
-    }
-    
-    # Send the query and get the response
-    response_json <- request_table(query,
-                                   timeout=timeout)
-
-    # Extract results
-    out<-extract_results(response_json, custom)
-    
-    if(only_keep_data){
-      out<-out$dfs[[1]]
-    }
-    return(out)
-}
-
-
-#'@export 
-fetch_data_from_spec_table<-function(spec_table,
-                                     timeout=600,
-                                     only_keep_data=T){
-  #arrange spec table so custom mappings will work 
-  if(!"value_group"%in%names(spec_table)){
-    spec_table<-spec_table|>
-      dplyr::mutate(value_group=NA)
+    break
   }
-  spec_table<-spec_table|>
-    dplyr::arrange(field_id,value_group)
-  
-  mapping_df<-spec_table|>
-    tidyr::drop_na(value_group)|>
-    dplyr::distinct(value_group,field_label)
-  
-  mapping_field_names<-mapping_df|>
-    dplyr::distinct(field_label)|>
-    dplyr::pull()
-  
-  mapping<-purrr::map(mapping_field_names,
-                      ~mapping_df|>
-                        dplyr::filter(field_label==.x)|>
-                        dplyr::pull(value_group))
-  names(mapping)<-mapping_field_names
-  
-  temp_path<-tempfile(fileext=".json")
-  
-  #now export the spec_table to the temp path
-  spec_list<-convert_spec_table_to_list(spec_table)
-  export_json(spec_list,temp_path)
-  
-  #and fetch from that temp_path
-  out<-fetch_table(filename=temp_path,
-                   custom=mapping,
-                   timeout=timeout,
-                   only_keep_data=only_keep_data)
-  
-  return(out)
-  
+
+  # Process the JSON, and return
+  jsonlite::fromJSON(response_text, simplifyVector = FALSE)
+}
+
+#' Send a table query and return tidy results
+#'
+#' Submits a query to the Stat-Xplore `table` endpoint and converts the returned
+#' cube(s) to a list containing metadata and one long-form data frame per
+#' measure.
+#'
+#' You can pass the query as a JSON string in `query`, or read it from a file
+#' path in `filename` (which takes priority). This is often convenient when
+#' exporting queries from the Stat-Xplore website "table builder".
+#'
+#' If your query uses custom aggregate variables, you may need to override item
+#' labels using `custom`, because the returned metadata may not match the
+#' dimensions implied by the query.
+#'
+#' @param query Stat-Xplore query as a JSON string.
+#' @param filename Path to a text file containing a Stat-Xplore query. If
+#'   supplied, `query` is ignored.
+#' @param custom Named list of character vectors giving item labels to use for
+#'   selected fields when constructing the results.
+#' @param timeout Number of seconds to wait before timing out.
+#' @param attempts Maximum number of attempts (only retries on 504 responses).
+#' @param only_keep_data If `TRUE`, return just the first results data frame
+#'   (useful when the query has a single measure). If `FALSE`, return the full
+#'   results list produced by [extract_results()].
+#' @param drop_total_rows If `TRUE`, rewrite the query to set all `total` flags
+#'   to `FALSE` before sending (this drops total rows generated by Stat-Xplore).
+#'
+#' @return Either a results list with elements `measures`, `fields`, `items`,
+#'   `uris`, and `dfs`, or (when `only_keep_data = TRUE`) a single tibble/data
+#'   frame.
+#' @export
+fetch_table <- function(query, 
+                        filename = NULL, 
+                        custom = NULL,
+                        timeout = 600,
+                        attempts=10,
+                        only_keep_data = TRUE,
+                        drop_total_rows = FALSE) {
+
+  # Read the query from a file if given
+  if (!is.null(filename)) query <- readr::read_file(filename)
+
+  # Drop the rows with totals in them by importing and re-exporting
+  if (drop_total_rows) {
+    tmpfile <- tempfile()
+    json_list <- jsonlite::fromJSON(query)
+    # export_json() optionally removes totals (by flipping "total" -> false)
+    export_json(json_list, tmpfile, remove_total_rows = TRUE)
+    query <- readr::read_file(tmpfile)
+  }
+
+  # Send the query and get the response
+  response_json <- request_table(query, 
+                                 timeout = timeout,
+                                 attempts=attempts)
+
+  # Extract results
+  out <- extract_results(response_json, custom)
+
+  if (only_keep_data) {
+    out <- out$dfs[[1]]
+  }
+
+  out
+}
+
+#' Fetch data from a tidy "spec table"
+#'
+#' Convenience wrapper that:
+#' 1) converts a spec table (as produced by [convert_json_to_spec_table()]) into
+#'    a Stat-Xplore JSON spec,
+#' 2) writes it to a temporary `.json` file, and
+#' 3) calls [fetch_table()] to download and parse the results.
+#'
+#' Grouped recodes are supported via a `value_group` column. Where `value_group`
+#' is present, the function constructs the `custom` mapping needed by
+#' [extract_results()] so returned item labels align with the grouped query.
+#'
+#' @param spec_table A tibble/data frame with (at minimum) `database_id`,
+#'   `measure_id`, `field_id`, and `value_id`. A `value_group` column may be
+#'   present for grouped recodes.
+#' @param timeout Number of seconds to wait before timing out on each attempt.
+#' @param attempts Maximum number of attempts (only retries on 504 responses).
+#' @param only_keep_data Passed to [fetch_table()].
+#'
+#' @return Either a single data frame (default) or a full results list
+#'   (when `only_keep_data = FALSE`).
+#' @export
+fetch_data_from_spec_table <- function(spec_table,
+                                       timeout = 600,
+                                       attempts= 10,
+                                       only_keep_data = TRUE) {
+
+  # Arrange spec table so custom mappings will work
+  if (!"value_group" %in% names(spec_table)) {
+    spec_table <- spec_table |>
+      dplyr::mutate(value_group = NA_character_)
+    spec_table <- spec_table |>
+      dplyr::arrange(field_id, value_group)
+    mapping<-NULL
+  }else{
+    #construct a mapping if has grouped variables
+    if(!"field_label"%in%names(spec_table)){
+      warning("Adding labels to table as need to do so if given grouped input")
+      spec_table<-spec_table|>add_labels_and_locations_to_spec_table()
+    }
+    mapping_df <- spec_table |>
+      tidyr::drop_na(value_group) |>
+      dplyr::distinct(value_group, field_label)
+    
+    mapping_field_names <- mapping_df |>
+      dplyr::distinct(field_label) |>
+      dplyr::pull()
+    
+    mapping <- purrr::map(
+      mapping_field_names,
+      ~ mapping_df |>
+        dplyr::filter(field_label == .x) |>
+        dplyr::pull(value_group)
+    )
+    names(mapping) <- mapping_field_names
+  }
+
+  temp_path <- tempfile(fileext = ".json")
+
+  # Export the spec_table to the temp path
+  spec_list <- convert_spec_table_to_list(spec_table)
+  export_json(spec_list, temp_path)
+
+  # Fetch from that temp_path
+  fetch_table(
+    filename = temp_path,
+    custom = mapping,
+    timeout = timeout,
+    attempts=attempts,
+    only_keep_data = only_keep_data
+  )
 }

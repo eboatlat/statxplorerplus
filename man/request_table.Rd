@@ -2,21 +2,26 @@
 % Please edit documentation in R/fetch.R
 \name{request_table}
 \alias{request_table}
-\title{Send an http request with a query and return the response}
+\title{Send a Stat-Xplore table request and return parsed JSON}
 \usage{
-request_table(query, timeout = 600)
+request_table(query, timeout = 600, attempts = 10)
 }
 \arguments{
-\item{query}{A valid Stat-Xplore query as a string.}
+\item{query}{A valid Stat-Xplore query as a JSON string.}
 
-\item{timeout}{Length to wait before timing out (seconds)}
+\item{timeout}{Number of seconds to wait before timing out.}
+
+\item{attempts}{Maximum number of attempts (only retries on 504 responses).}
 }
 \value{
-A list of the query results as parsed json.
+A list representation of the JSON response (not simplified).
 }
 \description{
-\code{request_table} sends a query to the table endpoint, checks the
-response, parses the response text as json, and returns the parsed data. If
-the query syntax is not valid or the request fails for any other reason an
-error is raised with the response text.
+Posts a JSON query to the Stat-Xplore \code{table} endpoint, validates the HTTP
+response, and returns the parsed JSON as an R list.
+}
+\details{
+The function retries on HTTP 504 Gateway Timeout up to \code{attempts} times.
+For other non-200 responses it errors with the response body to help
+debugging invalid queries.
 }

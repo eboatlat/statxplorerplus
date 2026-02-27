@@ -2,10 +2,19 @@
 % Please edit documentation in R/json_helpers.R
 \name{remove_total_rows}
 \alias{remove_total_rows}
-\title{Remove total rows from a json file}
+\title{Remove total rows from a JSON spec/query file}
 \usage{
 remove_total_rows(.input_path, .output_path)
 }
+\arguments{
+\item{.input_path}{Path to the input JSON file.}
+
+\item{.output_path}{Path to write the output JSON file.}
+}
+\value{
+Invisibly returns \code{NULL}. Writes a JSON file to \code{.output_path}.
+}
 \description{
-Remove total rows from a json file
+Convenience wrapper around \code{\link[=export_json]{export_json()}} that reads a JSON file, forces all
+totals off, and writes the corrected JSON to a new file.
 }

@@ -2,10 +2,23 @@
 % Please edit documentation in R/labeling.R
 \name{get_target_type_info_below}
 \alias{get_target_type_info_below}
-\title{Traverse down from a URL to collect target types}
+\title{Traverse down from a schema URL and collect records of chosen types}
 \usage{
 get_target_type_info_below(.url, .target_types, .max_iterations = 10)
 }
+\arguments{
+\item{.url}{A schema \code{location} URL to start from (e.g. a database location).}
+
+\item{.target_types}{Character vector of schema types to collect, e.g.
+\code{c("MEASURE", "FIELD")}.}
+
+\item{.max_iterations}{Maximum number of traversal steps.}
+}
+\value{
+A tibble of matching schema records.
+}
 \description{
-Traverse down from a URL to collect target types
+Walks the Stat-Xplore schema tree breadth-first from \code{.url}, repeatedly
+fetching children using \code{\link[=get_next_level_info]{get_next_level_info()}}. At each step, rows whose
+\code{type} matches \code{.target_types} are collected into a single tibble.
 }
