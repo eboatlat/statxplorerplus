@@ -19,7 +19,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Your Name \email{you@example.com}
+\strong{Maintainer}: Eduin Latimer \email{Eduin.Latimer@ifs.org.uk}
 
 }
 \keyword{internal}
