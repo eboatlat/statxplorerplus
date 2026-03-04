@@ -2,7 +2,7 @@
 #'
 #' Given a tidy spec table (as used by [fetch_data_from_spec_table()]), this
 #' function detects the date field (by attempting to parse `value_label` as a
-#' month-year using [lubridate::my()]) and appends any additional available date
+#' month-year using [lubridate::my()] or year-month using [lubridate::ym()]) and appends any additional available date
 #' values (can select to only add newer dates.
 #'
 #' The returned table contains only `*_id` columns, ready to be converted back
@@ -20,17 +20,21 @@ update_spec_table_to_latest_data <- function(.input_tbl,
     tbl <- add_labels_and_locations_to_spec_table(tbl)
   }
   #test if column is a date
-  tbl <- tbl |> dplyr::mutate(
-    date_value = lubridate::my(value_label),
-    date_value = dplyr::if_else(is.na(date_value),lubridate::ym(value_label),date_value)
-  )
+  date_tbl <- tbl |> 
+    #pre-filter for a quarter or month or date in the field
+    dplyr::filter(stringr::str_detect(field_id,"(?i)date|quarter|month|time"))|>
+    dplyr::mutate(
+    date_value_temp = lubridate::my(value_label),
+    date_value = dplyr::if_else(is.na(date_value_temp),lubridate::ym(value_label),date_value_temp)
+  )|>
+  dplyr::select(-date_value_temp)
 
-  date_tbl <- tbl |>
+  date_tbl <- date_tbl |>
     tidyr::drop_na(date_value) |>
     dplyr::mutate(max_date_value = max(date_value),
                   exist_data = T)
 
-  date_field_label <- tbl |>
+  date_field_label <- date_tbl |>
     tidyr::drop_na(date_value) |>
     dplyr::distinct(field_label) |>
     dplyr::pull()
@@ -47,7 +51,8 @@ update_spec_table_to_latest_data <- function(.input_tbl,
 
   matched_dates <- dplyr::bind_rows(avail_values, date_tbl) |>
     dplyr::mutate(
-      date_value = lubridate::my(value_label),
+      date_value_temp = lubridate::my(value_label),
+      date_value = dplyr::if_else(is.na(date_value_temp),lubridate::ym(value_label),date_value_temp),
       max_exist_date_value = max(max_date_value, na.rm = TRUE),
       exist_data=dplyr::if_else(is.na(exist_data),F,T)
     )
