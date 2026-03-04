@@ -73,5 +73,6 @@ update_spec_table_to_latest_data <- function(.input_tbl,
 
   .input_tbl |>
     dplyr::bind_rows(add_dates_tbl) |>
-    dplyr::select(dplyr::ends_with("_id"))
+    dplyr::select(dplyr::ends_with("_id"),dplyr::ends_with("_label"))|>
+    dplyr::distinct()
 }
