@@ -19,7 +19,11 @@ update_spec_table_to_latest_data <- function(.input_tbl,
   if(!"value_label"%in%names(tbl)){
     tbl <- add_labels_and_locations_to_spec_table(tbl)
   }
-  tbl <- dplyr::mutate(tbl, date_value = lubridate::my(value_label))
+  #test if column is a date
+  tbl <- tbl |> dplyr::mutate(
+    date_value = lubridate::my(value_label),
+    date_value = dplyr::if_else(is.na(date_value),lubridate::ym(value_label),date_value)
+  )
 
   date_tbl <- tbl |>
     tidyr::drop_na(date_value) |>
