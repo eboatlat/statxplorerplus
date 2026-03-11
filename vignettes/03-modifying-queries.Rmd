@@ -27,6 +27,10 @@ This vignette starts with a query that downloads Attendance Allowance (ACC)
 claimant counts for **age 16 in England in August 2022** and modifies it to
 instead download the same data for **age 17 in Wales**.
 
+Rather than hardcoding the Stat-Xplore value IDs for "Wales" and "17", the
+vignette shows how to look them up from the spec table itself using
+`get_schema_info()`.
+
 ## Step 1 – Load the package and set your API key
 
 ```{r load-pkg}
@@ -38,8 +42,7 @@ load_api_key("path/to/apikey.txt")
 
 ## Step 2 – Load the original query
 
-Convert the JSON to a spec table and add labels so you can see what each
-row refers to:
+Convert the JSON to a spec table and add labels and schema locations:
 
 ```{r convert}
 json_path <- "path/to/acc_england_age_16_aug22.json"
@@ -64,17 +67,77 @@ spec_tbl |>
 #> 3 Month          August 2022 202208
 ```
 
-## Step 3 – Modify the query
+## Step 3 – Browse available values to find the IDs you need
 
-Because the original query contains only one age and one geography, we
-replace the values in place using `mutate()` and `case_when()`:
+The spec table includes a `valueset_location` column — a schema URL pointing
+to all possible values for each field. Use `get_schema_info()` on these URLs
+to see what is available.
+
+**Find the Wales value ID:**
+
+```{r browse-geo}
+geo_valueset_url <- spec_tbl |>
+  filter(field_label == "Region/Country") |>
+  pull(valueset_location)
+
+get_schema_info(geo_valueset_url) |>
+  select(child_label, child_id)
+```
+
+```
+#> # A tibble: 4 × 2
+#>   child_label      child_id
+#>   <chr>            <chr>
+#> 1 England          str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:E92000001
+#> 2 Wales            str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:W92000004
+#> 3 Scotland         str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:S92000003
+#> 4 Northern Ireland str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:N92000002
+```
+
+**Find the age 17 value ID:**
+
+```{r browse-age}
+age_valueset_url <- spec_tbl |>
+  filter(field_label == "Age (Single)") |>
+  pull(valueset_location)
+
+get_schema_info(age_valueset_url) |>
+  filter(child_label %in% c("16", "17")) |>
+  select(child_label, child_id)
+```
+
+```
+#> # A tibble: 2 × 2
+#>   child_label child_id
+#>   <chr>       <chr>
+#> 1 16          str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16
+#> 2 17          str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17
+```
+
+Now extract the IDs into variables:
+
+```{r extract-ids}
+wales_id <- get_schema_info(geo_valueset_url) |>
+  filter(child_label == "Wales") |>
+  pull(child_id)
+
+age17_id <- get_schema_info(age_valueset_url) |>
+  filter(child_label == "17") |>
+  pull(child_id)
+```
+
+## Step 4 – Modify the query
+
+Replace the age and geography values in the spec table using `mutate()` and
+`case_when()`. Note that `value_code` is updated last so the earlier
+conditions can still match on the original value:
 
 ```{r modify}
 spec_tbl_modified <- spec_tbl |>
   mutate(
     value_id = case_when(
-      value_code == "16"        ~ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17",
-      value_code == "E92000001" ~ "str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:W92000004",
+      value_code == "16"        ~ age17_id,
+      value_code == "E92000001" ~ wales_id,
       TRUE                      ~ value_id
     ),
     value_label = case_when(
@@ -102,10 +165,7 @@ spec_tbl_modified |>
 #> 3 Month          August 2022 202208
 ```
 
-Note: `value_code` is updated last so the `case_when()` conditions in the
-earlier columns can still match on the original value.
-
-## Step 4 – Fetch the modified data
+## Step 5 – Fetch the modified data
 
 ```{r fetch}
 acc_17_wales <- fetch_data_from_spec_table(spec_tbl_modified)
@@ -120,7 +180,7 @@ acc_17_wales
 #> 1 Attendance Allowance (ACC) ACC claimant count 17    Wales     August 2022    287
 ```
 
-## Step 5 – (Optional) export the modified query as a new JSON
+## Step 6 – (Optional) export the modified query as a new JSON
 
 Save the modified spec table as a JSON file so it can be reused later:
 
@@ -138,7 +198,8 @@ export_json(
 | Step | Code | Purpose |
 |---|---|---|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
-| 2 | `add_labels_and_locations_to_spec_table()` | Add labels to identify rows |
-| 3 | `mutate()` + `case_when()` | Replace the age and geography values |
-| 4 | `fetch_data_from_spec_table()` | Fetch the modified query |
-| 5 | `convert_spec_table_to_list()` + `export_json()` | Save as a new JSON |
+| 2 | `add_labels_and_locations_to_spec_table()` | Add labels and schema locations |
+| 3 | `get_schema_info()` on `valueset_location` | Browse available values to find IDs |
+| 4 | `mutate()` + `case_when()` | Replace the age and geography values |
+| 5 | `fetch_data_from_spec_table()` | Fetch the modified query |
+| 6 | `convert_spec_table_to_list()` + `export_json()` | Save as a new JSON |
