@@ -1,5 +1,5 @@
 
-# 3. Grouping variables in a spec table
+# 4. Grouping variables in a spec table
 
 ## Overview
 

@@ -1,5 +1,5 @@
 
-# 2. Subsetting API calls
+# 2. Subsetting queries
 
 ## Overview
 

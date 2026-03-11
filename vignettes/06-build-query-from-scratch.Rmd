@@ -3,7 +3,7 @@ output:
   github_document:
     pandoc_args: ["--markdown-headings=atx"]
 vignette: >
-  %\VignetteIndexEntry{5. Building a query from scratch using the schema}
+  %\VignetteIndexEntry{6. Building a query from scratch using the schema}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# 5. Building a query from scratch using the schema
+# 6. Building a query from scratch using the schema
 
 ## Overview
 

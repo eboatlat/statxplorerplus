@@ -1,0 +1,117 @@
+
+# 3. Modifying an existing query
+
+## Overview
+
+Once a query is loaded into a spec table, you can change any of its
+values using standard `dplyr` operations — no need to edit the JSON file
+directly.
+
+This vignette starts with a query that downloads Attendance Allowance
+(ACC) claimant counts for **16-year-olds in England** and modifies it to
+instead download the same data for **17-year-olds in Wales**.
+
+## Step 1 – Load the package and set your API key
+
+``` r
+library(statxplorerplus)
+library(dplyr)
+
+load_api_key("path/to/apikey.txt")
+```
+
+## Step 2 – Load the original query
+
+Convert the JSON to a spec table and add labels so you can see what each
+row refers to:
+
+``` r
+json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
+
+spec_tbl <- convert_json_to_spec_table(json_path) |>
+  add_labels_and_locations_to_spec_table()
+```
+
+Check the current age and geography selections:
+
+``` r
+spec_tbl |>
+  filter(field_label %in% c("Age of Claimant (Single Years)",
+                             "Region/Country")) |>
+  select(field_label, value_label, value_code)
+```
+
+    #> # A tibble: 53 × 3
+    #>   field_label                    value_label value_code
+    #>   <chr>                          <chr>       <chr>
+    #> 1 Age of Claimant (Single Years) 16          16
+    #> 2 Age of Claimant (Single Years) 17          17
+    #> ...
+    #> 52 Region/Country                 England     E92000001
+    #> 53 Region/Country                 Wales       W92000004
+
+## Step 3 – Modify the query
+
+Replace age 16 with age 17 in the age field, and replace England with
+Wales in the geography field:
+
+``` r
+spec_tbl_modified <- spec_tbl |>
+  filter(
+    # Keep only age 17 (drop all other ages)
+    field_label != "Age of Claimant (Single Years)" |
+      value_code == "17",
+    # Keep only Wales (drop England)
+    field_label != "Region/Country" |
+      value_code == "W92000004"
+  )
+
+spec_tbl_modified |>
+  filter(field_label %in% c("Age of Claimant (Single Years)",
+                             "Region/Country")) |>
+  select(field_label, value_label, value_code)
+```
+
+    #> # A tibble: 2 × 3
+    #>   field_label                    value_label value_code
+    #>   <chr>                          <chr>       <chr>
+    #> 1 Age of Claimant (Single Years) 17          17
+    #> 2 Region/Country                 Wales       W92000004
+
+## Step 4 – Fetch the modified data
+
+``` r
+acc_17_wales <- fetch_data_from_spec_table(spec_tbl_modified)
+
+acc_17_wales
+```
+
+    #>   V_F_ACC   AGE DATE_NAME    WARD_CODE EMP        value
+    #>   <chr>     <chr> <chr>      <chr>     <chr>      <dbl>
+    #> 1 ACC count 17   August 2013 Wales     Employed       2
+    #> 2 ACC count 17   August 2013 Wales     Unemployed     1
+    #> 3 ACC count 17   August 2019 Wales     Employed       3
+    #> ...
+
+## Step 5 – (Optional) export the modified query as a new JSON
+
+Save the modified spec table as a JSON file so it can be reused later:
+
+``` r
+modified_list <- convert_spec_table_to_list(spec_tbl_modified)
+
+export_json(
+  .json        = modified_list,
+  .output_path = "path/to/acc_17_wales.json"
+)
+```
+
+## Summary
+
+| Step | Code | Purpose |
+|----|----|----|
+| 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
+| 2 | `add_labels_and_locations_to_spec_table()` | Add labels to identify rows |
+| 3 | `filter()` | Swap out the age and geography values |
+| 4 | `fetch_data_from_spec_table()` | Fetch the modified query |
+| 5 | `convert_spec_table_to_list()` + `export_json()` | Save as a new JSON |

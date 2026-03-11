@@ -1,5 +1,5 @@
 
-# 5. Building a query from scratch using the schema
+# 6. Building a query from scratch using the schema
 
 ## Overview
 
