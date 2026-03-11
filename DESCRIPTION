@@ -26,7 +26,10 @@ Suggests:
     testthat (>= 3.0.0),
     roxygen2,
     devtools,
-    pkgdown
+    pkgdown,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://example.com/statxplorerplus
 BugReports: https://example.com/statxplorerplus/issues

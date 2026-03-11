@@ -1,0 +1,17 @@
+# R build artefacts
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+.Rproj.user/
+
+# pkgdown site output (if building locally)
+docs/
+
+# API keys and credentials — NEVER commit these
+*.txt
+!README.txt
+
+# R check output
+/doc/
+/Meta/
