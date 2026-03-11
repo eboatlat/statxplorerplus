@@ -1,37 +1,25 @@
----
-title: "2. Grouping variables in a spec table"
-output: github_document
-vignette: >
-  %\VignetteIndexEntry{2. Grouping variables in a spec table}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
-)
-```
+2. Grouping variables in a spec table
+================
 
 ## Overview
 
-Stat-Xplore lets you aggregate individual values into groups using *recodes*.
-`statxplorerplus` represents these groupings in the `value_group` column of
-a **spec table**: rows sharing the same `value_group` string are collapsed
-into a single category when the query is sent to the API.
+Stat-Xplore lets you aggregate individual values into groups using
+*recodes*. `statxplorerplus` represents these groupings in the
+`value_group` column of a **spec table**: rows sharing the same
+`value_group` string are collapsed into a single category when the query
+is sent to the API.
 
 This vignette shows how to:
 
-1. Convert a JSON spec to a spec table.
-2. Add human-readable labels so you can see what each row refers to.
-3. Assign `value_group` labels to create age-band and date-period groupings.
-4. Fetch the grouped data.
+1.  Convert a JSON spec to a spec table.
+2.  Add human-readable labels so you can see what each row refers to.
+3.  Assign `value_group` labels to create age-band and date-period
+    groupings.
+4.  Fetch the grouped data.
 
 ## Step 1 – Load the package and set your API key
 
-```{r load-pkg}
+``` r
 library(statxplorerplus)
 library(dplyr)
 library(stringr)
@@ -41,7 +29,7 @@ load_api_key("path/to/apikey.txt")
 
 ## Step 2 – Convert the JSON to a spec table
 
-```{r convert}
+``` r
 json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
 
 spec_tbl <- convert_json_to_spec_table(json_path)
@@ -49,18 +37,16 @@ spec_tbl <- convert_json_to_spec_table(json_path)
 spec_tbl
 ```
 
-```
-#> # A tibble: 57 × 5
-#>   database_id        measure_id            field_id                      value_id                                              valueset_id
-#>   <chr>              <chr>                 <chr>                         <chr>                                                 <chr>
-#> 1 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
-#> 2 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
-#> ...
-```
+    #> # A tibble: 57 × 5
+    #>   database_id        measure_id            field_id                      value_id                                              valueset_id
+    #>   <chr>              <chr>                 <chr>                         <chr>                                                 <chr>
+    #> 1 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
+    #> 2 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
+    #> ...
 
 ## Step 3 – Add labels so you can identify the values
 
-```{r add-labels}
+``` r
 spec_tbl_labelled <- spec_tbl |>
   add_labels_and_locations_to_spec_table()
 
@@ -69,27 +55,26 @@ spec_tbl_labelled |>
   select(field_label, value_label, value_code)
 ```
 
-```
-#> # A tibble: 57 × 3
-#>   field_label                    value_label   value_code
-#>   <chr>                          <chr>         <chr>
-#> 1 Age of Claimant (Single Years) 16            16
-#> 2 Age of Claimant (Single Years) 17            17
-#> 3 Age of Claimant (Single Years) 18            18
-#> ...
-#> 52 Month                         August 2013   201308
-#> 53 Month                         August 2019   201908
-#> 54 Month                         August 2022   202208
-```
+    #> # A tibble: 57 × 3
+    #>   field_label                    value_label   value_code
+    #>   <chr>                          <chr>         <chr>
+    #> 1 Age of Claimant (Single Years) 16            16
+    #> 2 Age of Claimant (Single Years) 17            17
+    #> 3 Age of Claimant (Single Years) 18            18
+    #> ...
+    #> 52 Month                         August 2013   201308
+    #> 53 Month                         August 2019   201908
+    #> 54 Month                         August 2022   202208
 
 ## Step 4 – Assign groupings via `value_group`
 
-Add a `value_group` column to define how individual values are collapsed.
-Rows without a `value_group` (i.e. `NA`) are kept as individual categories.
+Add a `value_group` column to define how individual values are
+collapsed. Rows without a `value_group` (i.e. `NA`) are kept as
+individual categories.
 
 ### Example A – Age bands (16–34, 35–54, 55–65+)
 
-```{r group-age}
+``` r
 spec_tbl_grouped <- spec_tbl_labelled |>
   mutate(
     value_group = case_when(
@@ -111,24 +96,22 @@ spec_tbl_grouped |>
   select(value_label, value_code, value_group)
 ```
 
-```
-#> # A tibble: 51 × 3
-#>   value_label value_code value_group
-#>   <chr>       <chr>      <chr>
-#> 1 16          16         16-34
-#> 2 17          17         16-34
-#> ...
-#> 20 35          35         35-54
-#> ...
-#> 40 55          55         55+
-```
+    #> # A tibble: 51 × 3
+    #>   value_label value_code value_group
+    #>   <chr>       <chr>      <chr>
+    #> 1 16          16         16-34
+    #> 2 17          17         16-34
+    #> ...
+    #> 20 35          35         35-54
+    #> ...
+    #> 40 55          55         55+
 
-### Example B – Date periods ("Pre-2019", "Post-2019")
+### Example B – Date periods (“Pre-2019”, “Post-2019”)
 
 You can group more than one field at once. Here we also group the three
 available months into two named periods:
 
-```{r group-dates}
+``` r
 spec_tbl_grouped <- spec_tbl_labelled |>
   mutate(
     value_group = case_when(
@@ -155,32 +138,30 @@ Pass the spec table (with `value_group` populated) directly to
 `fetch_data_from_spec_table()`. The groupings are applied automatically
 before the query is sent.
 
-```{r fetch}
+``` r
 acc_grouped <- fetch_data_from_spec_table(spec_tbl_grouped)
 
 head(acc_grouped)
 ```
 
-```
-#>   V_F_ACC  AGE   DATE_NAME  WARD_CODE  EMP         value
-#>   <chr>    <chr> <chr>      <chr>      <chr>       <dbl>
-#> 1 ACC count 16-34 Pre-2022  England   Employed     4821
-#> 2 ACC count 16-34 Pre-2022  England   Unemployed   1203
-#> ...
-```
+    #>   V_F_ACC  AGE   DATE_NAME  WARD_CODE  EMP         value
+    #>   <chr>    <chr> <chr>      <chr>      <chr>       <dbl>
+    #> 1 ACC count 16-34 Pre-2022  England   Employed     4821
+    #> 2 ACC count 16-34 Pre-2022  England   Unemployed   1203
+    #> ...
 
 ## How grouping works under the hood
 
 When `value_group` is set, `fetch_data_from_spec_table()` calls
 `construct_custom_var_mapping_from_spec_table()` to build a named list
-that maps group labels to the individual Stat-Xplore value IDs. This list
-is forwarded to `extract_results()` so that the API response is correctly
-labelled with your custom group names instead of the raw IDs.
+that maps group labels to the individual Stat-Xplore value IDs. This
+list is forwarded to `extract_results()` so that the API response is
+correctly labelled with your custom group names instead of the raw IDs.
 
 ## Summary
 
 | Step | Function | Purpose |
-|---|---|---|
+|----|----|----|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
 | 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
 | 3 | `mutate(value_group = ...)` | Define groupings |

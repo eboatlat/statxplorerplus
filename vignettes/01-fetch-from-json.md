@@ -1,25 +1,11 @@
----
-title: "1. Fetching data directly from a JSON spec"
-output: github_document
-vignette: >
-  %\VignetteIndexEntry{1. Fetching data directly from a JSON spec}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
-)
-```
+1. Fetching data directly from a JSON spec
+================
 
 ## Overview
 
-The simplest way to get data from Stat-Xplore is to pass an existing JSON
-spec file directly to `fetch_table()`. This vignette shows that workflow
-end-to-end using the Attendance Allowance (ACC) dataset.
+The simplest way to get data from Stat-Xplore is to pass an existing
+JSON spec file directly to `fetch_table()`. This vignette shows that
+workflow end-to-end using the Attendance Allowance (ACC) dataset.
 
 The JSON spec used here selects:
 
@@ -30,7 +16,7 @@ The JSON spec used here selects:
 - **Geography**: England and Wales (country level)
 - **Date**: August 2013, August 2019, August 2022
 
-```json
+``` json
 {
   "database": "str:database:ACC",
   "measures": ["str:count:ACC:V_F_ACC"],
@@ -52,7 +38,7 @@ The JSON spec used here selects:
 
 ## Step 1 – Load the package and set your API key
 
-```{r load-pkg}
+``` r
 library(statxplorerplus)
 
 # Load your API key from a text file (one line, no trailing whitespace)
@@ -65,27 +51,25 @@ Pass the path to your saved JSON spec to `fetch_table()`. The function
 sends the query to the Stat-Xplore API and returns a tidy data frame by
 default.
 
-```{r fetch}
+``` r
 json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
 acc_data <- fetch_table(filename = json_path)
 
 head(acc_data)
 ```
 
-```
-#>   V_F_ACC    AGE DATE_NAME   WARD_CODE EMP         value
-#>   <chr>    <chr> <chr>       <chr>     <chr>       <dbl>
-#> 1 ACC count 16  August 2013 England   Employed       12
-#> 2 ACC count 16  August 2013 England   Unemployed      3
-#> ...
-```
+    #>   V_F_ACC    AGE DATE_NAME   WARD_CODE EMP         value
+    #>   <chr>    <chr> <chr>       <chr>     <chr>       <dbl>
+    #> 1 ACC count 16  August 2013 England   Employed       12
+    #> 2 ACC count 16  August 2013 England   Unemployed      3
+    #> ...
 
 ## Step 3 – Inspect the full results object (optional)
 
-If you need access to the raw measures, field labels, or URIs returned by
-the API, set `only_keep_data = FALSE`:
+If you need access to the raw measures, field labels, or URIs returned
+by the API, set `only_keep_data = FALSE`:
 
-```{r fetch-full}
+``` r
 acc_results <- fetch_table(
   filename    = "path/to/acc_ew_by_single_year_of_age_pre19.json",
   only_keep_data = FALSE
@@ -101,10 +85,10 @@ acc_results$fields
 
 ## Step 4 – Drop totals (optional)
 
-Stat-Xplore can return a "Total" row for each recode dimension. Pass
+Stat-Xplore can return a “Total” row for each recode dimension. Pass
 `drop_total_rows = TRUE` to remove them automatically:
 
-```{r fetch-no-totals}
+``` r
 acc_data_clean <- fetch_table(
   filename        = "path/to/acc_ew_by_single_year_of_age_pre19.json",
   drop_total_rows = TRUE
@@ -114,8 +98,8 @@ acc_data_clean <- fetch_table(
 ## Summary
 
 | Function | Purpose |
-|---|---|
+|----|----|
 | `load_api_key()` | Load API key from file |
 | `fetch_table(filename = ...)` | Query Stat-Xplore and return a data frame |
 | `fetch_table(..., only_keep_data = FALSE)` | Return the full results list |
-| `fetch_table(..., drop_total_rows = TRUE)` | Remove "Total" rows from results |
+| `fetch_table(..., drop_total_rows = TRUE)` | Remove “Total” rows from results |
