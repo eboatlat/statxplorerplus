@@ -114,16 +114,8 @@ See [Guide 3](vignettes/03-update-to-latest-data.md) for more detail.
 ### Build a query from scratch in R
 
 Browse the available datasets, fields, and values directly in R to build a
-spec table without exporting a JSON file from the website first:
-
-```r
-databases <- list_databases()
-fields    <- get_target_type_info_below(db_location, "FIELD")
-values    <- get_next_level_info(field_location)
-```
-
-See [Guide 4](vignettes/04-build-query-from-scratch.md) for a full
-walkthrough.
+spec table without exporting a JSON file from the website first. See
+[Guide 4](vignettes/04-build-query-from-scratch.md) for a full walkthrough.
 
 ## Getting started
 
