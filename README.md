@@ -26,7 +26,21 @@ produces a spec table with three rows — one per selected value:
 3 str:database:ACC   str:field:ACC:F_ACC_DATE:DATE  str:value:ACC:F_ACC_DATE:DATE:...:202208    Attendance Allowance (ACC) Month           August 2022  202208
 ```
 
-If you downloaded data based on this specification table you would get information on the number of people on 'alternative claimant count' how are aged 16 and live in England. 
+If you downloaded data based on this specification table you would get information on the number of people on 'alternative claimant count' how are aged 16 and live in England.
+
+```r
+library(statxplorerplus)
+
+load_api_key("path/to/apikey.txt")
+
+data <- fetch_data_from_spec_table(spec_tbl)
+
+data
+#> # A tibble: 1 × 6
+#>   database_label             measure_label      AGE   WARD_CODE DATE_NAME    value
+#>   <chr>                      <chr>              <chr> <chr>     <chr>        <dbl>
+#> 1 Attendance Allowance (ACC) ACC claimant count 16    England   August 2022   1042
+```
 
 Because it is just a data frame, you can inspect, filter, and modify a
 query using standard R tools before downloading any data. This makes it
