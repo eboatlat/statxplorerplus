@@ -26,7 +26,7 @@ This vignette shows how to:
 
 1. Convert a JSON spec to a spec table.
 2. Add human-readable labels so you can see what each row refers to.
-3. Assign `value_group` labels to create age-band and date-period groupings.
+3. Assign `value_group` labels to create age-band groupings.
 4. Fetch the grouped data.
 
 ## Step 1 – Load the package and set your API key
@@ -34,7 +34,6 @@ This vignette shows how to:
 ```{r load-pkg}
 library(statxplorerplus)
 library(dplyr)
-library(stringr)
 
 load_api_key("path/to/apikey.txt")
 ```
@@ -51,10 +50,10 @@ spec_tbl
 
 ```
 #> # A tibble: 57 × 5
-#>   database_id        measure_id            field_id                      value_id                                              valueset_id
-#>   <chr>              <chr>                 <chr>                         <chr>                                                 <chr>
-#> 1 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
-#> 2 str:database:ACC   str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE     str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17         str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
+#>   database_id      measure_id            field_id
+#>   <chr>            <chr>                 <chr>
+#> 1 str:database:ACC str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE
+#> 2 str:database:ACC str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE
 #> ...
 ```
 
@@ -64,48 +63,40 @@ spec_tbl
 spec_tbl_labelled <- spec_tbl |>
   add_labels_and_locations_to_spec_table()
 
-# Each row now has human-readable labels alongside the IDs
 spec_tbl_labelled |>
   select(field_label, value_label, value_code)
 ```
 
 ```
 #> # A tibble: 57 × 3
-#>   field_label                    value_label   value_code
-#>   <chr>                          <chr>         <chr>
-#> 1 Age of Claimant (Single Years) 16            16
-#> 2 Age of Claimant (Single Years) 17            17
-#> 3 Age of Claimant (Single Years) 18            18
+#>   field_label                    value_label value_code
+#>   <chr>                          <chr>       <chr>
+#> 1 Age of Claimant (Single Years) 16          16
+#> 2 Age of Claimant (Single Years) 17          17
+#> 3 Age of Claimant (Single Years) 18          18
 #> ...
-#> 52 Month                         August 2013   201308
-#> 53 Month                         August 2019   201908
-#> 54 Month                         August 2022   202208
 ```
 
-## Step 4 – Assign groupings via `value_group`
+## Step 4 – Assign age-band groupings via `value_group`
 
 Add a `value_group` column to define how individual values are collapsed.
 Rows without a `value_group` (i.e. `NA`) are kept as individual categories.
-
-### Example A – Age bands (16–34, 35–54, 55–65+)
+Here we group single years of age into three broad bands:
 
 ```{r group-age}
 spec_tbl_grouped <- spec_tbl_labelled |>
   mutate(
     value_group = case_when(
-      # Age bands – use value_code for numeric comparison
       field_label == "Age of Claimant (Single Years)" &
         as.integer(value_code) %in% 16:34 ~ "16-34",
       field_label == "Age of Claimant (Single Years)" &
         as.integer(value_code) %in% 35:54 ~ "35-54",
       field_label == "Age of Claimant (Single Years)" &
         as.integer(value_code) >= 55      ~ "55+",
-      # Leave all other fields ungrouped
       TRUE ~ NA_character_
     )
   )
 
-# Check the result
 spec_tbl_grouped |>
   filter(field_label == "Age of Claimant (Single Years)") |>
   select(value_label, value_code, value_group)
@@ -123,32 +114,6 @@ spec_tbl_grouped |>
 #> 40 55          55         55+
 ```
 
-### Example B – Date periods ("Pre-2019", "Post-2019")
-
-You can group more than one field at once. Here we also group the three
-available months into two named periods:
-
-```{r group-dates}
-spec_tbl_grouped <- spec_tbl_labelled |>
-  mutate(
-    value_group = case_when(
-      # Age bands
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) %in% 16:34 ~ "16-34",
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) %in% 35:54 ~ "35-54",
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) >= 55      ~ "55+",
-      # Date periods – group by month label
-      field_label == "Month" &
-        str_detect(value_label, "2013|2019") ~ "Pre-2022",
-      field_label == "Month" &
-        str_detect(value_label, "2022")      ~ "2022",
-      TRUE ~ NA_character_
-    )
-  )
-```
-
 ## Step 5 – Fetch the grouped data
 
 Pass the spec table (with `value_group` populated) directly to
@@ -162,10 +127,10 @@ head(acc_grouped)
 ```
 
 ```
-#>   V_F_ACC  AGE   DATE_NAME  WARD_CODE  EMP         value
-#>   <chr>    <chr> <chr>      <chr>      <chr>       <dbl>
-#> 1 ACC count 16-34 Pre-2022  England   Employed     4821
-#> 2 ACC count 16-34 Pre-2022  England   Unemployed   1203
+#>   V_F_ACC   AGE   DATE_NAME    WARD_CODE EMP        value
+#>   <chr>     <chr> <chr>        <chr>     <chr>      <dbl>
+#> 1 ACC count 16-34 August 2013  England   Employed    4821
+#> 2 ACC count 16-34 August 2013  England   Unemployed  1203
 #> ...
 ```
 
@@ -183,5 +148,5 @@ labelled with your custom group names instead of the raw IDs.
 |---|---|---|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
 | 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
-| 3 | `mutate(value_group = ...)` | Define groupings |
+| 3 | `mutate(value_group = ...)` | Define age-band groupings |
 | 4 | `fetch_data_from_spec_table()` | Fetch grouped data from API |
