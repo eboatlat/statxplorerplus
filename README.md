@@ -18,12 +18,12 @@ For example, a simple query selecting one age, one geography, and one month
 produces a spec table with three rows — one per selected value:
 
 ```
-# A tibble: 3 × 5
-  database_label             measure_label      field_label     value_label  value_code
-  <chr>                      <chr>              <chr>           <chr>        <chr>
-1 Attendance Allowance (ACC) ACC claimant count Age (Single)    16           16
-2 Attendance Allowance (ACC) ACC claimant count Region/Country  England      E92000001
-3 Attendance Allowance (ACC) ACC claimant count Month           August 2022  202208
+# A tibble: 3 × 7
+  database_id        field_id                       value_id                                    database_label             field_label     value_label  value_code
+  <chr>              <chr>                          <chr>                                       <chr>                      <chr>           <chr>        <chr>
+1 str:database:ACC   str:field:ACC:V_F_ACC:AGE      str:value:ACC:V_F_ACC:AGE:...:16            Attendance Allowance (ACC) Age (Single)    16           16
+2 str:database:ACC   str:field:ACC:V_F_ACC:WARD_CODE str:value:ACC:V_F_ACC:WARD_CODE:...:E92000001 Attendance Allowance (ACC) Region/Country  England      E92000001
+3 str:database:ACC   str:field:ACC:F_ACC_DATE:DATE  str:value:ACC:F_ACC_DATE:DATE:...:202208    Attendance Allowance (ACC) Month           August 2022  202208
 ```
 
 Because it is just a data frame, you can inspect, filter, and modify a
