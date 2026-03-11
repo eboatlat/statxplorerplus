@@ -10,6 +10,26 @@ It builds on the
 package developed by the House of Commons Library, extending it with tools
 to construct, modify, and reuse queries entirely within R.
 
+## Getting started
+
+You will need a Stat-Xplore API key. You can register for a free account at
+<https://stat-xplore.dwp.gov.uk>.
+
+**Install the package:**
+
+```r
+# install.packages("remotes")
+remotes::install_github("eboatlat/statxplorerplus")
+```
+
+**Set your API key:**
+
+```r
+library(statxplorerplus)
+
+load_api_key("path/to/apikey.txt")
+```
+
 ## The specification table (spec table)
 
 The central concept in this package is the **spec table** — a plain R data
@@ -134,26 +154,6 @@ See [Guide 5](vignettes/05-update-to-latest-data.md) for more detail.
 Browse the available datasets, fields, and values directly in R to build a
 spec table without exporting a JSON file from the website first. See
 [Guide 6](vignettes/06-build-query-from-scratch.md) for a full walkthrough.
-
-## Getting started
-
-You will need a Stat-Xplore API key. You can register for a free account at
-<https://stat-xplore.dwp.gov.uk>.
-
-**Install the package:**
-
-```r
-# install.packages("remotes")
-remotes::install_github("eboatlat/statxplorerplus")
-```
-
-**Set your API key:**
-
-```r
-library(statxplorerplus)
-
-load_api_key("path/to/apikey.txt")
-```
 
 ## Guides
 
