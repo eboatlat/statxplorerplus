@@ -10,55 +10,83 @@ It builds on the
 package developed by the House of Commons Library, extending it with tools
 to construct, modify, and reuse queries entirely within R.
 
+## The spec table
+
+The central concept in this package is the **spec table** — a plain R data
+frame where each row represents one value selected in a Stat-Xplore query.
+For example, a query that crosses age, geography, and month produces a spec
+table with one row per age value, one per geography, and one per month.
+
+```
+# A tibble: 57 × 7
+  database_label             measure_label      field_label   value_label  value_code
+  <chr>                      <chr>              <chr>         <chr>        <chr>
+1 Attendance Allowance (ACC) ACC claimant count Age (Single)  16           16
+2 Attendance Allowance (ACC) ACC claimant count Age (Single)  17           17
+3 Attendance Allowance (ACC) ACC claimant count Age (Single)  18           18
+...
+```
+
+Because it is just a data frame, you can inspect, filter, and modify a
+query using standard R tools before downloading any data. This makes it
+straightforward to:
+
+- **Add or remove** specific values from a query
+- **Group** individual values into broader categories (e.g. age bands) by
+  adding a `value_group` column — see
+  [Guide 2](vignettes/02-grouping-variables.md)
+- **Extend** a query to cover newer time periods automatically — see
+  [Guide 3](vignettes/03-update-to-latest-data.md)
+- **Build** an entirely new query from scratch by browsing the data
+  catalogue — see [Guide 4](vignettes/04-build-query-from-scratch.md)
+
+Once you are happy with the spec table, pass it to
+`fetch_data_from_spec_table()` to download the data.
+
 ## What can I do with this package?
 
-### Download data from Stat-Xplore
+### Download data directly from a JSON file
 
-If you have exported a query as a JSON file from the Stat-Xplore website,
-you can download the data in one line:
+If you have already exported a query as a JSON file from the Stat-Xplore
+website, you can download the data in one line — no spec table needed:
 
 ```r
 data <- fetch_table(filename = "path/to/my_query.json")
 ```
 
-### Build a query without leaving R
+See [Guide 1](vignettes/01-fetch-from-json.md) for a full walkthrough.
 
-You can browse the available datasets, fields, and values directly in R and
-put together a query without needing to use the Stat-Xplore website at all:
+### Load a query into a spec table and modify it
 
-```r
-# See what datasets are available
-databases <- list_databases()
-
-# See what fields are available in a dataset
-fields <- get_target_type_info_below(db_location, "FIELD")
-
-# Build your query and download the data
-data <- fetch_data_from_spec_table(my_spec_table)
-```
-
-### Modify an existing query
-
-Load an existing JSON query into R as a table, make changes, and download
-the updated data — without manually editing the JSON file:
+Convert a JSON file into a spec table, make changes in R, then download:
 
 ```r
 spec_tbl <- convert_json_to_spec_table("path/to/my_query.json") |>
   add_labels_and_locations_to_spec_table()
+
+# Inspect the query
+spec_tbl |> select(field_label, value_label)
+
+# Download
+data <- fetch_data_from_spec_table(spec_tbl)
 ```
 
-### Group observations together
+### Group values into broader categories
 
-Collapse individual values into broader categories. For example, group
-single years of age into age bands:
+Add a `value_group` column to the spec table to collapse individual values
+into custom categories before downloading. For example, grouping single
+years of age into bands:
 
 ```r
 spec_tbl_grouped <- spec_tbl |>
   mutate(
     value_group = case_when(
-      field_label == "Age" & as.integer(value_code) %in% 16:34 ~ "16-34",
-      field_label == "Age" & as.integer(value_code) %in% 35:54 ~ "35-54",
-      field_label == "Age" & as.integer(value_code) >= 55      ~ "55+",
+      field_label == "Age (Single)" &
+        as.integer(value_code) %in% 16:34 ~ "16-34",
+      field_label == "Age (Single)" &
+        as.integer(value_code) %in% 35:54 ~ "35-54",
+      field_label == "Age (Single)" &
+        as.integer(value_code) >= 55      ~ "55+",
       TRUE ~ NA_character_
     )
   )
@@ -66,11 +94,13 @@ spec_tbl_grouped <- spec_tbl |>
 data <- fetch_data_from_spec_table(spec_tbl_grouped)
 ```
 
-### Update a query to the latest available data
+See [Guide 2](vignettes/02-grouping-variables.md) for more detail.
 
-Stat-Xplore data is updated regularly. Rather than manually adding new time
-periods to your query each time, this package can detect what is new and add
-it automatically:
+### Update a query to include the latest data
+
+Rather than manually editing a query each time new data is published,
+`update_spec_table_to_latest_data()` checks the Stat-Xplore schema and
+adds any time periods not already in the spec table:
 
 ```r
 spec_tbl_updated <- spec_tbl |>
@@ -78,6 +108,22 @@ spec_tbl_updated <- spec_tbl |>
 
 data <- fetch_data_from_spec_table(spec_tbl_updated)
 ```
+
+See [Guide 3](vignettes/03-update-to-latest-data.md) for more detail.
+
+### Build a query from scratch in R
+
+Browse the available datasets, fields, and values directly in R to build a
+spec table without exporting a JSON file from the website first:
+
+```r
+databases <- list_databases()
+fields    <- get_target_type_info_below(db_location, "FIELD")
+values    <- get_next_level_info(field_location)
+```
+
+See [Guide 4](vignettes/04-build-query-from-scratch.md) for a full
+walkthrough.
 
 ## Getting started
 
@@ -101,12 +147,9 @@ load_api_key("path/to/apikey.txt")
 
 ## Guides
 
-Step-by-step guides are available in the
-[`vignettes/`](vignettes/) folder:
-
 | Guide | What it covers |
 |---|---|
 | [1. Fetch from JSON](vignettes/01-fetch-from-json.md) | Download data using an existing JSON query file |
-| [2. Grouping variables](vignettes/02-grouping-variables.md) | Combine individual values into broader groups |
-| [3. Update to latest data](vignettes/03-update-to-latest-data.md) | Add the most recent time periods to an existing query |
-| [4. Build a query from scratch](vignettes/04-build-query-from-scratch.md) | Browse the data catalogue and build a query in R |
+| [2. Grouping variables](vignettes/02-grouping-variables.md) | Collapse values into broader groups using a spec table |
+| [3. Update to latest data](vignettes/03-update-to-latest-data.md) | Extend a spec table to cover the most recent time periods |
+| [4. Build a query from scratch](vignettes/04-build-query-from-scratch.md) | Browse the data catalogue and build a spec table in R |
