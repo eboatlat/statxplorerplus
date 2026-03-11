@@ -10,21 +10,20 @@ It builds on the
 package developed by the House of Commons Library, extending it with tools
 to construct, modify, and reuse queries entirely within R.
 
-## The spec table
+## The specification table (spec table)
 
 The central concept in this package is the **spec table** — a plain R data
 frame where each row represents one value selected in a Stat-Xplore query.
-For example, a query that crosses age, geography, and month produces a spec
-table with one row per age value, one per geography, and one per month.
+For example, a simple query selecting one age, one geography, and one month
+produces a spec table with three rows — one per selected value:
 
 ```
-# A tibble: 57 × 7
-  database_label             measure_label      field_label   value_label  value_code
-  <chr>                      <chr>              <chr>         <chr>        <chr>
-1 Attendance Allowance (ACC) ACC claimant count Age (Single)  16           16
-2 Attendance Allowance (ACC) ACC claimant count Age (Single)  17           17
-3 Attendance Allowance (ACC) ACC claimant count Age (Single)  18           18
-...
+# A tibble: 3 × 5
+  database_label             measure_label      field_label     value_label  value_code
+  <chr>                      <chr>              <chr>           <chr>        <chr>
+1 Attendance Allowance (ACC) ACC claimant count Age (Single)    16           16
+2 Attendance Allowance (ACC) ACC claimant count Region/Country  England      E92000001
+3 Attendance Allowance (ACC) ACC claimant count Month           August 2022  202208
 ```
 
 Because it is just a data frame, you can inspect, filter, and modify a
