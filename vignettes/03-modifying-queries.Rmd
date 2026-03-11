@@ -45,7 +45,8 @@ load_api_key("path/to/apikey.txt")
 Convert the JSON to a spec table and add labels and schema locations:
 
 ```{r convert}
-json_path <- "path/to/acc_england_age_16_aug22.json"
+json_path <- system.file("extdata", "acc_england_age_16_aug22.json",
+                         package = "statxplorerplus")
 
 spec_tbl <- convert_json_to_spec_table(json_path) |>
   add_labels_and_locations_to_spec_table()

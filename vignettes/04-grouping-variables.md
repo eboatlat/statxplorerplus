@@ -28,7 +28,8 @@ load_api_key("path/to/apikey.txt")
 ## Step 2 – Convert the JSON to a spec table
 
 ``` r
-json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
+json_path <- system.file("extdata", "acc_ew_by_single_year_of_age.json",
+                         package = "statxplorerplus")
 
 spec_tbl <- convert_json_to_spec_table(json_path)
 

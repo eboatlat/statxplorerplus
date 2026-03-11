@@ -1,0 +1,19 @@
+{
+  "database" : "str:database:ACC",
+  "measures" : [ "str:count:ACC:V_F_ACC" ],
+  "recodes" : {
+    "str:field:ACC:V_F_ACC:AGE" : {
+      "map" : [ [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16" ] ],
+      "total" : true
+    },
+    "str:field:ACC:V_F_ACC:WARD_CODE" : {
+      "map" : [ [ "str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:E92000001" ] ],
+      "total" : true
+    },
+    "str:field:ACC:F_ACC_DATE_new:DATE_NAME" : {
+      "map" : [ [ "str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:202208" ] ],
+      "total" : false
+    }
+  },
+  "dimensions" : [ [ "str:field:ACC:F_ACC_DATE_new:DATE_NAME" ], [ "str:field:ACC:V_F_ACC:AGE" ], [ "str:field:ACC:V_F_ACC:WARD_CODE" ] ]
+}

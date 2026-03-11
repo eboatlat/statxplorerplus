@@ -52,7 +52,8 @@ sends the query to the Stat-Xplore API and returns a tidy data frame by
 default.
 
 ``` r
-json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
+json_path <- system.file("extdata", "acc_ew_by_single_year_of_age.json",
+                         package = "statxplorerplus")
 acc_data <- fetch_table(filename = json_path)
 
 head(acc_data)
@@ -71,7 +72,8 @@ by the API, set `only_keep_data = FALSE`:
 
 ``` r
 acc_results <- fetch_table(
-  filename    = "path/to/acc_ew_by_single_year_of_age_pre19.json",
+  filename       = system.file("extdata", "acc_ew_by_single_year_of_age.json",
+                               package = "statxplorerplus"),
   only_keep_data = FALSE
 )
 
@@ -90,7 +92,8 @@ Stat-Xplore can return a “Total” row for each recode dimension. Pass
 
 ``` r
 acc_data_clean <- fetch_table(
-  filename        = "path/to/acc_ew_by_single_year_of_age_pre19.json",
+  filename        = system.file("extdata", "acc_ew_by_single_year_of_age.json",
+                                package = "statxplorerplus"),
   drop_total_rows = TRUE
 )
 ```

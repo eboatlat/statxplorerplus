@@ -1,0 +1,23 @@
+{
+  "database" : "str:database:ACC",
+  "measures" : [ "str:count:ACC:V_F_ACC" ],
+  "recodes" : {
+    "str:field:ACC:V_F_ACC:AGE" : {
+      "map" : [ [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:18" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:19" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:20" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:21" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:22" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:23" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:24" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:25" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:26" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:27" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:28" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:29" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:30" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:31" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:32" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:33" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:34" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:35" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:36" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:37" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:38" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:39" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:40" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:41" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:42" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:43" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:44" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:45" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:46" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:47" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:48" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:49" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:50" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:51" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:52" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:53" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:54" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:55" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:56" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:57" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:58" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:59" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:60" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:61" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:62" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:63" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:64" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:65" ], [ "str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:99" ] ],
+      "total" : true
+    },
+    "str:field:ACC:V_F_ACC:EMP" : {
+      "map" : [ [ "str:value:ACC:V_F_ACC:EMP:C_ACC_EMPLOYMENT:0" ], [ "str:value:ACC:V_F_ACC:EMP:C_ACC_EMPLOYMENT:1" ], [ "str:value:ACC:V_F_ACC:EMP:C_ACC_EMPLOYMENT:99" ] ],
+      "total" : true
+    },
+    "str:field:ACC:V_F_ACC:WARD_CODE" : {
+      "map" : [ [ "str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:E92000001" ], [ "str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:W92000004" ] ],
+      "total" : true
+    },
+    "str:field:ACC:F_ACC_DATE_new:DATE_NAME" : {
+      "map" : [ [ "str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:201308" ], [ "str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:201908" ], [ "str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:202208" ] ],
+      "total" : false
+    }
+  },
+  "dimensions" : [ [ "str:field:ACC:V_F_ACC:AGE" ], [ "str:field:ACC:F_ACC_DATE_new:DATE_NAME" ], [ "str:field:ACC:V_F_ACC:WARD_CODE" ], [ "str:field:ACC:V_F_ACC:EMP" ] ]
+}
