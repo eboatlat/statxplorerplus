@@ -12,6 +12,9 @@ docs/
 *.txt
 !README.txt
 
+# Vignette HTML previews (local only)
+vignettes/*.html
+
 # R check output
 /doc/
 /Meta/
