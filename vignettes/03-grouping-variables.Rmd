@@ -3,7 +3,7 @@ output:
   github_document:
     pandoc_args: ["--markdown-headings=atx"]
 vignette: >
-  %\VignetteIndexEntry{2. Grouping variables in a spec table}
+  %\VignetteIndexEntry{3. Grouping variables in a spec table}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# 2. Grouping variables in a spec table
+# 3. Grouping variables in a spec table
 
 ## Overview
 

@@ -1,0 +1,126 @@
+---
+output:
+  github_document:
+    pandoc_args: ["--markdown-headings=atx"]
+vignette: >
+  %\VignetteIndexEntry{2. Subsetting API calls}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# 2. Subsetting API calls
+
+## Overview
+
+A JSON spec exported from Stat-Xplore may contain far more values than you
+need for a particular analysis. Rather than sending the full query to the
+API, you can convert the JSON to a spec table, filter it down to only the
+rows you want, and then fetch just that subset of the data.
+
+This vignette shows how to load a JSON spec, isolate a single age value
+(age 16), and download only that slice of the data.
+
+## Step 1 – Load the package and set your API key
+
+```{r load-pkg}
+library(statxplorerplus)
+library(dplyr)
+
+load_api_key("path/to/apikey.txt")
+```
+
+## Step 2 – Convert the JSON to a spec table and add labels
+
+```{r convert}
+json_path <- "path/to/acc_ew_by_single_year_of_age_pre19.json"
+
+spec_tbl <- convert_json_to_spec_table(json_path) |>
+  add_labels_and_locations_to_spec_table()
+```
+
+The full spec table contains rows for all 51 single years of age as well as
+rows for the geography, employment, and date fields. You can inspect which
+fields and values are included:
+
+```{r inspect}
+spec_tbl |>
+  count(field_label)
+```
+
+```
+#> # A tibble: 4 × 2
+#>   field_label                        n
+#>   <chr>                          <int>
+#> 1 Age of Claimant (Single Years)    51
+#> 2 Employment Indicator               3
+#> 3 Month                              3
+#> 4 Region/Country                     2
+```
+
+## Step 3 – Filter to age 16 only
+
+Keep only the row for age 16 from the age field, leaving all other fields
+unchanged:
+
+```{r subset}
+spec_tbl_age16 <- spec_tbl |>
+  filter(
+    field_label != "Age of Claimant (Single Years)" |
+      value_code == "16"
+  )
+
+spec_tbl_age16 |>
+  select(field_label, value_label, value_code)
+```
+
+```
+#> # A tibble: 9 × 3
+#>   field_label                    value_label  value_code
+#>   <chr>                          <chr>        <chr>
+#> 1 Age of Claimant (Single Years) 16           16
+#> 2 Employment Indicator           Employed     0
+#> 3 Employment Indicator           Unemployed   1
+#> 4 Employment Indicator           Unknown      99
+#> 5 Month                          August 2013  201308
+#> 6 Month                          August 2019  201908
+#> 7 Month                          August 2022  202208
+#> 8 Region/Country                 England      E92000001
+#> 9 Region/Country                 Wales        W92000004
+```
+
+The spec table now has just one age row instead of 51, which will make the
+API call much faster.
+
+## Step 4 – Fetch the data
+
+```{r fetch}
+acc_age16 <- fetch_data_from_spec_table(spec_tbl_age16)
+
+acc_age16
+```
+
+```
+#>   V_F_ACC   AGE DATE_NAME    WARD_CODE EMP        value
+#>   <chr>     <chr> <chr>      <chr>     <chr>      <dbl>
+#> 1 ACC count 16   August 2013 England   Employed      12
+#> 2 ACC count 16   August 2013 England   Unemployed     3
+#> 3 ACC count 16   August 2013 Wales     Employed       2
+#> ...
+```
+
+## Summary
+
+| Step | Code | Purpose |
+|---|---|---|
+| 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
+| 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
+| 3 | `filter()` | Keep only the values you need |
+| 4 | `fetch_data_from_spec_table()` | Fetch the subset from the API |

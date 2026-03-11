@@ -13,7 +13,7 @@ to construct, modify, and reuse queries entirely within R.
 ## The specification table (spec table)
 
 The central concept in this package is the **spec table** — a plain R data
-frame where each row represents one value selected in a Stat-Xplore query.
+frame where each row represents one value selected in a Stat-Xplore query
 For example, a simple query selecting one age, one geography, and one month
 produces a spec table with three rows — one per selected value:
 
@@ -30,14 +30,15 @@ Because it is just a data frame, you can inspect, filter, and modify a
 query using standard R tools before downloading any data. This makes it
 straightforward to:
 
-- **Add or remove** specific values from a query
+- **Subset** the query to only the values you need before fetching — see
+  [Guide 2](vignettes/02-subsetting-api-calls.md)
 - **Group** individual values into broader categories (e.g. age bands) by
   adding a `value_group` column — see
-  [Guide 2](vignettes/02-grouping-variables.md)
+  [Guide 3](vignettes/03-grouping-variables.md)
 - **Extend** a query to cover newer time periods automatically — see
-  [Guide 3](vignettes/03-update-to-latest-data.md)
+  [Guide 4](vignettes/04-update-to-latest-data.md)
 - **Build** an entirely new query from scratch by browsing the data
-  catalogue — see [Guide 4](vignettes/04-build-query-from-scratch.md)
+  catalogue — see [Guide 5](vignettes/05-build-query-from-scratch.md)
 
 Once you are happy with the spec table, pass it to
 `fetch_data_from_spec_table()` to download the data.
@@ -93,7 +94,7 @@ spec_tbl_grouped <- spec_tbl |>
 data <- fetch_data_from_spec_table(spec_tbl_grouped)
 ```
 
-See [Guide 2](vignettes/02-grouping-variables.md) for more detail.
+See [Guide 3](vignettes/03-grouping-variables.md) for more detail.
 
 ### Update a query to include the latest data
 
@@ -108,13 +109,13 @@ spec_tbl_updated <- spec_tbl |>
 data <- fetch_data_from_spec_table(spec_tbl_updated)
 ```
 
-See [Guide 3](vignettes/03-update-to-latest-data.md) for more detail.
+See [Guide 4](vignettes/04-update-to-latest-data.md) for more detail.
 
 ### Build a query from scratch in R
 
 Browse the available datasets, fields, and values directly in R to build a
 spec table without exporting a JSON file from the website first. See
-[Guide 4](vignettes/04-build-query-from-scratch.md) for a full walkthrough.
+[Guide 5](vignettes/05-build-query-from-scratch.md) for a full walkthrough.
 
 ## Getting started
 
@@ -141,6 +142,7 @@ load_api_key("path/to/apikey.txt")
 | Guide | What it covers |
 |---|---|
 | [1. Fetch from JSON](vignettes/01-fetch-from-json.md) | Download data using an existing JSON query file |
-| [2. Grouping variables](vignettes/02-grouping-variables.md) | Collapse values into broader groups using a spec table |
-| [3. Update to latest data](vignettes/03-update-to-latest-data.md) | Extend a spec table to cover the most recent time periods |
-| [4. Build a query from scratch](vignettes/04-build-query-from-scratch.md) | Browse the data catalogue and build a spec table in R |
+| [2. Subsetting API calls](vignettes/02-subsetting-api-calls.md) | Filter a spec table to a subset of values before fetching |
+| [3. Grouping variables](vignettes/03-grouping-variables.md) | Collapse values into broader groups using a spec table |
+| [4. Update to latest data](vignettes/04-update-to-latest-data.md) | Extend a spec table to cover the most recent time periods |
+| [5. Build a query from scratch](vignettes/05-build-query-from-scratch.md) | Browse the data catalogue and build a spec table in R |
