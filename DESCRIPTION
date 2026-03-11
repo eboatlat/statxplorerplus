@@ -31,5 +31,5 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-URL: https://example.com/statxplorerplus
-BugReports: https://example.com/statxplorerplus/issues
+URL: https://eboatlat.github.io/statxplorerplus/, https://github.com/eboatlat/statxplorerplus
+BugReports: https://github.com/eboatlat/statxplorerplus/issues
