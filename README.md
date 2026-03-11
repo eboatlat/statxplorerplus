@@ -1,86 +1,64 @@
 # statxplorerplus
 
-**statxplorerplus** is an R package for working with the
-[DWP Stat-Xplore API](https://stat-xplore.dwp.gov.uk). It provides tools
-to query the API, convert JSON spec files to tidy tables and back, resolve
-human-readable labels to Stat-Xplore IDs, and keep existing queries up to
-date as new data is released.
+**statxplorerplus** is an R package that makes it easier to download and
+work with data from
+[Stat-Xplore](https://stat-xplore.dwp.gov.uk) — the DWP's online data
+portal covering benefits, claimants, and related statistics.
 
-## Background
-
-This package builds on the
+It builds on the
 [`statxplorer`](https://github.com/houseofcommonslibrary/statxplorer)
-package developed by the House of Commons Library, which provides the
-foundational R interface to the Stat-Xplore REST API. `statxplorerplus`
-extends that work with a higher-level workflow centred on a tidy **spec
-table** format, adding:
+package developed by the House of Commons Library, extending it with tools
+to construct, modify, and reuse queries entirely within R.
 
-- Conversion between Stat-Xplore JSON spec files and tidy tibbles
-- Schema-driven label resolution and fuzzy matching
-- Automatic detection and appending of newer date values
-- Support for grouped recodes (custom aggregate variables)
-- Utilities for navigating the Stat-Xplore schema interactively
+## What can I do with this package?
 
-## Installation
+### Download data from Stat-Xplore
+
+If you have exported a query as a JSON file from the Stat-Xplore website,
+you can download the data in one line:
 
 ```r
-# install.packages("remotes")
-remotes::install_github("eboatlat/statxplorerplus")
+data <- fetch_table(filename = "path/to/my_query.json")
 ```
 
-## Getting started
+### Build a query without leaving R
 
-You will need a Stat-Xplore API key. Register for free at
-<https://stat-xplore.dwp.gov.uk>.
+You can browse the available datasets, fields, and values directly in R and
+put together a query without needing to use the Stat-Xplore website at all:
 
 ```r
-library(statxplorerplus)
+# See what datasets are available
+databases <- list_databases()
 
-# Load your key from a file (recommended)
-load_api_key("path/to/apikey.txt")
+# See what fields are available in a dataset
+fields <- get_target_type_info_below(db_location, "FIELD")
 
-# Or set it directly for the session
-set_api_key("your-api-key")
+# Build your query and download the data
+data <- fetch_data_from_spec_table(my_spec_table)
 ```
 
-## Core workflows
+### Modify an existing query
 
-### 1. Fetch data directly from a JSON spec
-
-The quickest route if you already have a Stat-Xplore JSON export:
-
-```r
-data <- fetch_table(filename = "path/to/query.json")
-```
-
-### 2. Convert a JSON spec to a spec table
-
-The **spec table** is the central data structure in this package — a tidy
-tibble with one row per selected value. Converting to a spec table lets you
-inspect, modify, or extend the query in R before fetching:
+Load an existing JSON query into R as a table, make changes, and download
+the updated data — without manually editing the JSON file:
 
 ```r
-spec_tbl <- convert_json_to_spec_table("path/to/query.json") |>
+spec_tbl <- convert_json_to_spec_table("path/to/my_query.json") |>
   add_labels_and_locations_to_spec_table()
-
-data <- fetch_data_from_spec_table(spec_tbl)
 ```
 
-### 3. Group variables before fetching
+### Group observations together
 
-Add a `value_group` column to collapse individual values into custom
-categories (e.g. age bands):
+Collapse individual values into broader categories. For example, group
+single years of age into age bands:
 
 ```r
 spec_tbl_grouped <- spec_tbl |>
   mutate(
     value_group = case_when(
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) %in% 16:34 ~ "16-34",
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) %in% 35:54 ~ "35-54",
-      field_label == "Age of Claimant (Single Years)" &
-        as.integer(value_code) >= 55      ~ "55+",
+      field_label == "Age" & as.integer(value_code) %in% 16:34 ~ "16-34",
+      field_label == "Age" & as.integer(value_code) %in% 35:54 ~ "35-54",
+      field_label == "Age" & as.integer(value_code) >= 55      ~ "55+",
       TRUE ~ NA_character_
     )
   )
@@ -88,10 +66,11 @@ spec_tbl_grouped <- spec_tbl |>
 data <- fetch_data_from_spec_table(spec_tbl_grouped)
 ```
 
-### 4. Update a spec to the latest available data
+### Update a query to the latest available data
 
-Automatically append date values that have been published since the spec
-was created:
+Stat-Xplore data is updated regularly. Rather than manually adding new time
+periods to your query each time, this package can detect what is new and add
+it automatically:
 
 ```r
 spec_tbl_updated <- spec_tbl |>
@@ -100,47 +79,34 @@ spec_tbl_updated <- spec_tbl |>
 data <- fetch_data_from_spec_table(spec_tbl_updated)
 ```
 
-### 5. Build a query from scratch
+## Getting started
 
-Browse the schema interactively, assemble a labels table, and convert it
-to a spec table without needing to export a JSON from the Stat-Xplore UI:
+You will need a Stat-Xplore API key. You can register for a free account at
+<https://stat-xplore.dwp.gov.uk>.
+
+**Install the package:**
 
 ```r
-databases  <- list_databases()
-fields     <- get_target_type_info_below(db_location, "FIELD")
-values     <- get_next_level_info(field_location)
-
-spec_tbl <- my_labels_table |>
-  convert_labels_table_to_spec_table()
-
-export_json(convert_spec_table_to_list(spec_tbl), "path/to/output.json")
+# install.packages("remotes")
+remotes::install_github("eboatlat/statxplorerplus")
 ```
 
-## Vignettes
+**Set your API key:**
+
+```r
+library(statxplorerplus)
+
+load_api_key("path/to/apikey.txt")
+```
+
+## Guides
 
 Step-by-step guides are available in the
 [`vignettes/`](vignettes/) folder:
 
-| Vignette | Description |
+| Guide | What it covers |
 |---|---|
-| [01 – Fetch from JSON](vignettes/01-fetch-from-json.md) | Fetch data directly from an existing JSON spec |
-| [02 – Grouping variables](vignettes/02-grouping-variables.md) | Collapse values into custom groups via the spec table |
-| [03 – Update to latest data](vignettes/03-update-to-latest-data.md) | Append newer date values automatically |
-| [04 – Build a query from scratch](vignettes/04-build-query-from-scratch.md) | Navigate the schema and build a query without a JSON file |
-
-## Key functions
-
-| Function | Purpose |
-|---|---|
-| `load_api_key()` / `set_api_key()` | Set your Stat-Xplore API key |
-| `fetch_table()` | Query the API from a JSON file or string |
-| `fetch_data_from_spec_table()` | Query the API from a spec table |
-| `convert_json_to_spec_table()` | Parse a JSON spec into a tidy tibble |
-| `convert_spec_table_to_list()` | Convert a spec table back to a JSON list |
-| `add_labels_and_locations_to_spec_table()` | Enrich a spec table with human-readable labels |
-| `update_spec_table_to_latest_data()` | Append newer dates from the schema |
-| `list_databases()` | List all available Stat-Xplore databases |
-| `get_target_type_info_below()` | Find all fields or measures under a database |
-| `get_next_level_info()` | Step one level down the schema tree |
-| `convert_labels_table_to_spec_table()` | Resolve human-readable labels to IDs |
-| `export_json()` | Write a spec list to a JSON file |
+| [1. Fetch from JSON](vignettes/01-fetch-from-json.md) | Download data using an existing JSON query file |
+| [2. Grouping variables](vignettes/02-grouping-variables.md) | Combine individual values into broader groups |
+| [3. Update to latest data](vignettes/03-update-to-latest-data.md) | Add the most recent time periods to an existing query |
+| [4. Build a query from scratch](vignettes/04-build-query-from-scratch.md) | Browse the data catalogue and build a query in R |
