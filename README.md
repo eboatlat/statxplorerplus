@@ -109,6 +109,10 @@ spec_tbl |> select(field_label, value_label)
 data <- fetch_data_from_spec_table(spec_tbl)
 ```
 
+See [Guide 2](vignettes/02-subsetting-queries.md) for subsetting a query to
+specific values, and [Guide 3](vignettes/03-modifying-queries.md) for
+swapping values (e.g. different age or geography).
+
 ### Group values into broader categories
 
 Add a `value_group` column to the spec table to collapse individual values
