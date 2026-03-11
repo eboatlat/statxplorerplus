@@ -1,6 +1,7 @@
 ---
-title: "4. Building a query from scratch using the schema"
-output: github_document
+output:
+  github_document:
+    pandoc_args: ["--markdown-headings=atx"]
 vignette: >
   %\VignetteIndexEntry{4. Building a query from scratch using the schema}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,6 +15,8 @@ knitr::opts_chunk$set(
   eval = FALSE
 )
 ```
+
+# 4. Building a query from scratch using the schema
 
 ## Overview
 

@@ -1,6 +1,7 @@
 ---
-title: "2. Grouping variables in a spec table"
-output: github_document
+output:
+  github_document:
+    pandoc_args: ["--markdown-headings=atx"]
 vignette: >
   %\VignetteIndexEntry{2. Grouping variables in a spec table}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,6 +15,8 @@ knitr::opts_chunk$set(
   eval = FALSE
 )
 ```
+
+# 2. Grouping variables in a spec table
 
 ## Overview
 

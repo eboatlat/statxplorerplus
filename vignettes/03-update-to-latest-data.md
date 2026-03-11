@@ -1,5 +1,5 @@
-3. Updating a spec to the latest available data
-================
+
+# 3. Updating a spec to the latest available data
 
 ## Overview
 

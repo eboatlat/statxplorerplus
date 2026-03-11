@@ -1,5 +1,5 @@
-1. Fetching data directly from a JSON spec
-================
+
+# 1. Fetching data directly from a JSON spec
 
 ## Overview
 
