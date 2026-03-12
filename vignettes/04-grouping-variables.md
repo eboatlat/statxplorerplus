@@ -1,13 +1,30 @@
 
 # 4. Grouping variables in a spec table
 
-## Overview
+## Why group variables?
 
-Stat-Xplore lets you aggregate individual values into groups using
-*recodes*. `statxplorerplus` represents these groupings in the
-`value_group` column of a **spec table**: rows sharing the same
-`value_group` string are collapsed into a single category when the query
-is sent to the API.
+Stat-Xplore provides data broken down by individual values — for
+example, single years of age (16, 17, 18, …). Sometimes you want to
+combine these into broader categories that are not available as built-in
+groupings in Stat-Xplore itself. For instance, you might want age bands
+such as 16–34, 35–54, and 55+ rather than individual years.
+
+`statxplorerplus` supports this through the `value_group` column of a
+**spec table**: rows that share the same `value_group` string are sent
+to the API as a single grouped category.
+
+### What does grouping do to the returned values?
+
+The effect depends on what you are asking the API for:
+
+- **Counts** — the API returns the *sum* of the individual values within
+  the group. So if age 16 has 200 claimants and age 17 has 180, a
+  “16–17” group would return 380.
+- **Means / averages** — the API returns the *weighted average* across
+  the individual values within the group, weighted by the counts of each
+  individual value.
+
+### Overview
 
 This vignette shows how to:
 
