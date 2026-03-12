@@ -39,14 +39,14 @@ produces a spec table with three rows — one per selected value:
 
 ```
 # A tibble: 3 × 7
-  database_id        field_id                       value_id                                    database_label             field_label     value_label  value_code
-  <chr>              <chr>                          <chr>                                       <chr>                      <chr>           <chr>        <chr>
-1 str:database:ACC   str:field:ACC:V_F_ACC:AGE      str:value:ACC:V_F_ACC:AGE:...:16            Attendance Allowance (ACC) Age (Single)    16           16
-2 str:database:ACC   str:field:ACC:V_F_ACC:WARD_CODE str:value:ACC:V_F_ACC:WARD_CODE:...:E92000001 Attendance Allowance (ACC) Region/Country  England      E92000001
-3 str:database:ACC   str:field:ACC:F_ACC_DATE:DATE  str:value:ACC:F_ACC_DATE:DATE:...:202208    Attendance Allowance (ACC) Month           August 2022  202208
+  database_id        field_id                             value_id                                          database_label              field_label                    value_label  value_code
+  <chr>              <chr>                                <chr>                                             <chr>                       <chr>                          <chr>        <chr>
+1 str:database:ACC   str:field:ACC:V_F_ACC:AGE            str:value:ACC:V_F_ACC:AGE:...:16                  Alternative Claimant Count  Age of Claimant (Single Years) 16           16
+2 str:database:ACC   str:field:ACC:V_F_ACC:WARD_CODE      str:value:ACC:V_F_ACC:WARD_CODE:...:E92000001     Alternative Claimant Count  Region/Country of Residence    England      E92000001
+3 str:database:ACC   str:field:ACC:F_ACC_DATE_new:DATE_NAME str:value:ACC:F_ACC_DATE_new:DATE_NAME:...:202208 Alternative Claimant Count Month of Count                August 2022  202208
 ```
 
-If you downloaded data based on this specification table you would get information on the number of people on 'alternative claimant count' how are aged 16 and live in England.
+If you downloaded data based on this specification table you would get information on the number of people on the Alternative Claimant Count who are aged 16 and live in England.
 
 ```r
 library(statxplorerplus)
@@ -59,7 +59,7 @@ data
 #> # A tibble: 1 × 6
 #>   database_label             measure_label      AGE   WARD_CODE DATE_NAME    value
 #>   <chr>                      <chr>              <chr> <chr>     <chr>        <dbl>
-#> 1 Attendance Allowance (ACC) ACC claimant count 16    England   August 2022   1042
+#> 1 Alternative Claimant Count ACC claimant count 16    England   August 2022   1042
 ```
 
 Because it is just a data frame, you can inspect, filter, and modify a
