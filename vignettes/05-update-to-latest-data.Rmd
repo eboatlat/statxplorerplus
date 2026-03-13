@@ -30,8 +30,9 @@ This vignette shows the full workflow:
 
 1. Convert a JSON to a spec table.
 2. Inspect which dates are currently in the spec.
-3. Update the spec to include all dates newer than those already in the spec.
-4. Fetch the updated data.
+3. Remove the most recent date to simulate a spec that is not fully up to date.
+4. Update the spec to include all dates newer than those already in the spec.
+5. Fetch the updated data and check which months are covered.
 
 ## Step 1 – Load the package and set your API key
 
@@ -72,14 +73,37 @@ spec_tbl |>
 The spec only covers three months. Many other months available in the
 database are not included.
 
-## Step 3 – Update to include newer dates
+## Step 3 – Remove the most recent date
+
+To demonstrate what happens when new data becomes available, remove the most
+recent date from the spec. This simulates a spec that was saved before the
+latest release:
+
+```{r trim}
+spec_tbl_trimmed <- spec_tbl |>
+  filter(!(field_label == "Month" & value_label == "August 2022"))
+
+spec_tbl_trimmed |>
+  filter(field_label == "Month") |>
+  select(value_label)
+```
+
+```
+#> # A tibble: 2 × 1
+#>   value_label
+#>   <chr>
+#> 1 August 2013
+#> 2 August 2019
+```
+
+## Step 4 – Update to include newer dates
 
 `update_spec_table_to_latest_data()` queries the Stat-Xplore schema for
 the date field and appends any date values that are newer than the latest
-date already in the spec.
+date already in the spec (here, newer than August 2019).
 
 ```{r update}
-spec_tbl_updated <- update_spec_table_to_latest_data(spec_tbl)
+spec_tbl_updated <- update_spec_table_to_latest_data(spec_tbl_trimmed)
 ```
 
 ### Inspect the updated dates
@@ -91,20 +115,26 @@ spec_tbl_updated |>
 ```
 
 ```
-#> # A tibble: 3 × 1
+#> # A tibble: 38 × 1
 #>    value_label
 #>    <chr>
 #>  1 August 2013
 #>  2 August 2019
-#>  3 August 2022
+#>  3 September 2019
+#>  4 October 2019
+#>  5 November 2019
+#>  6 December 2019
+#>  7 January 2020
+#>  8 February 2020
+#>  9 March 2020
+#> 10 April 2020
+#> # ℹ 28 more rows
 ```
 
-The spec is unchanged because the Alternative Claimant Count database
-currently has data up to August 2022, which is already the latest date
-in the spec. In practice, once new months are released on Stat-Xplore,
-running this step would automatically append them.
+The spec now covers 38 months: the original two plus all 36 months from
+September 2019 through August 2022.
 
-## Step 4 – Fetch the updated data
+## Step 5 – Fetch the updated data
 
 ```{r fetch}
 acc_updated <- fetch_data_from_spec_table(spec_tbl_updated)
@@ -123,6 +153,34 @@ head(acc_updated)
 #> 5 August 2013 16                            Not available          England                                                       0
 #> 6 August 2013 16                            Not available          Wales                                                         0
 ```
+
+### Check which months are covered
+
+```{r count-months}
+acc_updated |> count(Month)
+```
+
+```
+#> # A tibble: 38 × 2
+#>    Month             n
+#>    <chr>         <int>
+#>  1 April 2020      306
+#>  2 April 2021      306
+#>  3 April 2022      306
+#>  4 August 2013     306
+#>  5 August 2019     306
+#>  6 August 2020     306
+#>  7 August 2021     306
+#>  8 August 2022     306
+#>  9 December 2019   306
+#> 10 December 2020   306
+#> # ℹ 28 more rows
+```
+
+The data now covers all August 2013 and August 2019, which were in the
+original query, and then each of the newer months of data after August
+2019 giving 38 months, each with 306 rows (51 age values ×
+3 employment statuses × 2 geographies).
 
 ## Saving the updated spec back to JSON
 
@@ -144,6 +202,7 @@ export_json(
 |---|---|---|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
 | 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
-| 3 | `update_spec_table_to_latest_data()` | Append available date values newer than those in the spec |
-| 4 | `fetch_data_from_spec_table()` | Fetch data including new dates |
-| 5 | `convert_spec_table_to_list()` + `export_json()` | *(optional)* save updated spec |
+| 3 | `filter()` | Remove dates to simulate an outdated spec |
+| 4 | `update_spec_table_to_latest_data()` | Append date values newer than those in the spec |
+| 5 | `fetch_data_from_spec_table()` | Fetch data including new dates |
+| 6 | `convert_spec_table_to_list()` + `export_json()` | *(optional)* save updated spec |
