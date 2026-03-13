@@ -5,14 +5,14 @@
 
 The simplest way to get data from Stat-Xplore is to pass an existing
 JSON spec file directly to `fetch_table()`. This vignette shows that
-workflow end-to-end using the Attendance Allowance (ACC) dataset.
+workflow end-to-end using the Alternative Claimant Count (ACC) dataset.
 
 The JSON spec used here selects:
 
-- **Database**: Attendance Allowance (ACC)
+- **Database**: Alternative Claimant Count (ACC)
 - **Measure**: ACC claimant count (`V_F_ACC`)
 - **Age**: single year of age (16–65 + 99)
-- **Employment status**: employed, unemployed, unknown
+- **Employment status**: in employment, not in employment, not available
 - **Geography**: England and Wales (country level)
 - **Date**: August 2013, August 2019, August 2022
 
@@ -59,11 +59,15 @@ acc_data <- fetch_table(filename = json_path)
 head(acc_data)
 ```
 
-    #>   V_F_ACC    AGE DATE_NAME   WARD_CODE EMP         value
-    #>   <chr>    <chr> <chr>       <chr>     <chr>       <dbl>
-    #> 1 ACC count 16  August 2013 England   Employed       12
-    #> 2 ACC count 16  August 2013 England   Unemployed      3
-    #> ...
+    #> # A tibble: 6 × 5
+    #>   `Age (bands and single year)` Month       `National - Regional - LA - Wards` `Employment Indicator` `Alternative Claimant Count`
+    #>   <chr>                         <chr>       <chr>                              <chr>                                         <dbl>
+    #> 1 16                            August 2013 England                            Not in employment                               329
+    #> 2 16                            August 2013 England                            In employment                                    11
+    #> 3 16                            August 2013 England                            Not available                                     0
+    #> 4 16                            August 2013 England                            Total                                           342
+    #> 5 16                            August 2013 Wales                              Not in employment                                22
+    #> 6 16                            August 2013 Wales                              In employment                                     0
 
 ## Step 3 – Inspect the full results object (optional)
 
@@ -83,6 +87,8 @@ names(acc_results)
 
 # Human-readable field labels
 acc_results$fields
+#> [1] "Age (bands and single year)"      "Month"
+#> [3] "National - Regional - LA - Wards" "Employment Indicator"
 ```
 
 ## Step 4 – Drop totals (optional)

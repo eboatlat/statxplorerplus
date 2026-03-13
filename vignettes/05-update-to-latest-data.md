@@ -7,13 +7,14 @@ Stat-Xplore data is updated regularly. A JSON spec you downloaded months
 ago will only contain the dates that were available at that time. Rather
 than manually editing the JSON every time new data is released,
 `update_spec_table_to_latest_data()` queries the Stat-Xplore schema and
-appends all newer date values automatically.
+appends date values automatically.
 
 This vignette shows the full workflow:
 
 1.  Convert a JSON to a spec table.
 2.  Inspect which dates are currently in the spec.
-3.  Update the spec to include all newer dates.
+3.  Update the spec to include all available dates not already in the
+    spec.
 4.  (Optional) add groupings to the updated dates.
 5.  Fetch the updated data.
 
@@ -42,30 +43,32 @@ spec_tbl <- convert_json_to_spec_table(json_path) |>
 ``` r
 spec_tbl |>
   filter(field_label == "Month") |>
-  select(value_label, value_code)
+  select(value_label)
 ```
 
-    #> # A tibble: 3 × 2
-    #>   value_label  value_code
-    #>   <chr>        <chr>
-    #> 1 August 2013  201308
-    #> 2 August 2019  201908
-    #> 3 August 2022  202208
+    #> # A tibble: 3 × 1
+    #>   value_label
+    #>   <chr>
+    #> 1 August 2013
+    #> 2 August 2019
+    #> 3 August 2022
 
-The spec only covers three months. Any data published after August 2022
-is missing.
+The spec only covers three months. Many other months available in the
+database are not included.
 
-## Step 3 – Update to latest available dates
+## Step 3 – Update to include all available dates
 
 `update_spec_table_to_latest_data()` queries the Stat-Xplore schema for
-the date field, finds all available values, and appends those that are
-newer than the latest date already in the spec.
+the date field and appends any date values not already in the spec.
+
+Setting `.add_only_newer_dates = TRUE` only appends dates that are newer
+than the latest date already in the spec. Setting it to `FALSE` appends
+all available dates not already present, including historical ones.
 
 ``` r
 spec_tbl_updated <- update_spec_table_to_latest_data(
   spec_tbl,
-  # default: only appends dates newer than existing
-  .add_only_newer_dates = TRUE
+  .add_only_newer_dates = FALSE
 )
 ```
 
@@ -74,54 +77,43 @@ spec_tbl_updated <- update_spec_table_to_latest_data(
 ``` r
 spec_tbl_updated |>
   filter(field_label == "Month") |>
-  select(value_label, value_code)
+  select(value_label)
 ```
 
-    #> # A tibble: 6 × 2
-    #>   value_label    value_code
-    #>   <chr>          <chr>
-    #> 1 August 2013    201308
-    #> 2 August 2019    201908
-    #> 3 August 2022    202208
-    #> 4 November 2022  202211     # ← newly added
-    #> 5 February 2023  202302     # ← newly added
-    #> 6 May 2023       202305     # ← newly added
+    #> # A tibble: 116 × 1
+    #>    value_label
+    #>    <chr>
+    #>  1 August 2013
+    #>  2 August 2019
+    #>  3 August 2022
+    #>  4 January 2013
+    #>  5 February 2013
+    #>  6 March 2013
+    #>  ...
 
-Setting `.add_only_newer_dates = FALSE` would instead add *all* dates
-available in the schema that are not already present in the spec (useful
-if you also want to fill in historical gaps).
+The spec now covers all 116 months available in the database.
 
-## Step 4 – Re-add labels for the new rows
-
-The newly appended rows already have label and location columns
-populated by `update_spec_table_to_latest_data()`, so this step is
-usually not needed. If you find any rows with missing labels (e.g. after
-manual edits), re-run:
-
-``` r
-spec_tbl_updated <- spec_tbl_updated |>
-  add_labels_and_locations_to_spec_table()
-```
-
-## Step 5 – (Optional) add a grouping for the date field
+## Step 4 – (Optional) add a grouping for the date field
 
 You can classify the updated dates into meaningful periods before
-fetching. For example, group by financial year or policy era:
+fetching. For example, group by era:
 
 ``` r
 spec_tbl_updated <- spec_tbl_updated |>
   mutate(
     value_group = case_when(
       field_label == "Month" &
-        str_detect(value_label, "2013|2019") ~ "Pre-pandemic reference",
+        str_detect(value_label, "2013|2014|2015|2016|2017|2018") ~
+          "Pre-2019",
       field_label == "Month" &
-        str_detect(value_label, "2022|2023") ~ "Post-pandemic",
+        str_detect(value_label, "2019|2020|2021|2022") ~
+          "2019 onwards",
       TRUE ~ NA_character_
     )
   )
 ```
 
-## Step 6 – Fetch the updated data
+## Step 5 – Fetch the updated data
 
 ``` r
 acc_updated <- fetch_data_from_spec_table(spec_tbl_updated)
@@ -129,10 +121,10 @@ acc_updated <- fetch_data_from_spec_table(spec_tbl_updated)
 head(acc_updated)
 ```
 
-    #>   V_F_ACC   AGE DATE_NAME              WARD_CODE EMP         value
-    #>   <chr>     <chr> <chr>                <chr>     <chr>       <dbl>
-    #> 1 ACC count 16    August 2013          England   Employed       12
-    #> 2 ACC count 16    November 2022        England   Employed       14
+    #>   `Age (bands and single year)` `National - Regional - LA - Wards`
+    #>   <chr>                         <chr>
+    #> 1 16                            England
+    #> 2 16                            England
     #> ...
 
 ## Saving the updated spec back to JSON
@@ -155,7 +147,7 @@ export_json(
 |----|----|----|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
 | 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
-| 3 | `update_spec_table_to_latest_data()` | Append newer date values from schema |
+| 3 | `update_spec_table_to_latest_data()` | Append available date values from schema |
 | 4 | `mutate(value_group = ...)` | *(optional)* group the updated dates |
 | 5 | `fetch_data_from_spec_table()` | Fetch data including new dates |
 | 6 | `convert_spec_table_to_list()` + `export_json()` | *(optional)* save updated spec |

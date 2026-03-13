@@ -53,11 +53,11 @@ spec_tbl <- convert_json_to_spec_table(json_path)
 spec_tbl
 ```
 
-    #> # A tibble: 57 × 5
-    #>   database_id      measure_id            field_id
-    #>   <chr>            <chr>                 <chr>
-    #> 1 str:database:ACC str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE
-    #> 2 str:database:ACC str:count:ACC:V_F_ACC str:field:ACC:V_F_ACC:AGE
+    #> # A tibble: 59 × 6
+    #>   value_id                                      field_id                  value_group database_id      measure_id            valueset_id
+    #>   <chr>                                         <chr>                     <chr>       <chr>            <chr>                 <chr>
+    #> 1 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16 str:field:ACC:V_F_ACC:AGE <NA>        str:database:ACC str:count:ACC:V_F_ACC str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
+    #> 2 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17 str:field:ACC:V_F_ACC:AGE <NA>        str:database:ACC str:count:ACC:V_F_ACC str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE
     #> ...
 
 ## Step 3 – Add labels so you can identify the values
@@ -70,12 +70,12 @@ spec_tbl_labelled |>
   select(field_label, value_label, value_code)
 ```
 
-    #> # A tibble: 57 × 3
-    #>   field_label                    value_label value_code
-    #>   <chr>                          <chr>       <chr>
-    #> 1 Age of Claimant (Single Years) 16          16
-    #> 2 Age of Claimant (Single Years) 17          17
-    #> 3 Age of Claimant (Single Years) 18          18
+    #> # A tibble: 59 × 3
+    #>   field_label                 value_label value_code
+    #>   <chr>                       <chr>       <chr>
+    #> 1 Age (bands and single year) 16          16
+    #> 2 Age (bands and single year) 17          17
+    #> 3 Age (bands and single year) 18          18
     #> ...
 
 ## Step 4 – Assign age-band groupings via `value_group`
@@ -89,18 +89,18 @@ broad bands:
 spec_tbl_grouped <- spec_tbl_labelled |>
   mutate(
     value_group = case_when(
-      field_label == "Age of Claimant (Single Years)" &
+      field_label == "Age (bands and single year)" &
         as.integer(value_code) %in% 16:34 ~ "16-34",
-      field_label == "Age of Claimant (Single Years)" &
+      field_label == "Age (bands and single year)" &
         as.integer(value_code) %in% 35:54 ~ "35-54",
-      field_label == "Age of Claimant (Single Years)" &
+      field_label == "Age (bands and single year)" &
         as.integer(value_code) >= 55      ~ "55+",
       TRUE ~ NA_character_
     )
   )
 
 spec_tbl_grouped |>
-  filter(field_label == "Age of Claimant (Single Years)") |>
+  filter(field_label == "Age (bands and single year)") |>
   select(value_label, value_code, value_group)
 ```
 
@@ -126,11 +126,15 @@ acc_grouped <- fetch_data_from_spec_table(spec_tbl_grouped)
 head(acc_grouped)
 ```
 
-    #>   V_F_ACC   AGE   DATE_NAME    WARD_CODE EMP        value
-    #>   <chr>     <chr> <chr>        <chr>     <chr>      <dbl>
-    #> 1 ACC count 16-34 August 2013  England   Employed    4821
-    #> 2 ACC count 16-34 August 2013  England   Unemployed  1203
-    #> ...
+    #> # A tibble: 6 × 5
+    #>   `Age (bands and single year)` Month       `National - Regional - LA - Wards` `Employment Indicator` `Alternative Claimant Count`
+    #>   <chr>                         <chr>       <chr>                              <chr>                                         <dbl>
+    #> 1 16-34                         August 2013 England                            Not in employment                            704890
+    #> 2 16-34                         August 2013 England                            In employment                                 82665
+    #> 3 16-34                         August 2013 England                            Not available                                     0
+    #> 4 16-34                         August 2013 Wales                              Not in employment                             46972
+    #> 5 16-34                         August 2013 Wales                              In employment                                  5060
+    #> 6 16-34                         August 2013 Wales                              Not available                                     0
 
 ## How grouping works under the hood
 

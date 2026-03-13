@@ -54,11 +54,13 @@ databases
 ```
 
 ```
-#> # A tibble: 30 × 3
-#>   id                   label                        location
-#>   <chr>                <chr>                        <chr>
-#> 1 str:database:ACC     Attendance Allowance (ACC)   https://.../str:database:ACC
-#> 2 str:database:CESA    ...
+#> # A tibble: 120 × 3
+#>   id                                       label                                location
+#>   <chr>                                    <chr>                                <chr>
+#> 1 str:database:ACC                         Alternative Claimant Count           https://...
+#> 2 str:database:ACC_OFFS                    Alternative Claimant Count Off Flows https://...
+#> 3 str:database:ACC_ONS                     Alternative Claimant Count On Flows  https://...
+#> 4 str:database:AA_In_Payment_New           AA: Cases in Payment - Data from...  https://...
 #> ...
 ```
 
@@ -67,7 +69,7 @@ is the entry point for further schema navigation.
 
 ```{r pick-db}
 acc_location <- databases |>
-  filter(label == "Attendance Allowance (ACC)") |>
+  filter(label == "Alternative Claimant Count") |>
   pull(location)
 ```
 
@@ -78,17 +80,17 @@ URL and collects all records matching the requested types. Use it to list
 all measures and fields in one call:
 
 ```{r get-measures-fields}
-measures <- get_target_type_info_below(acc_location, "MEASURE")
+measures <- get_target_type_info_below(acc_location, c("MEASURE", "COUNT"))
 fields   <- get_target_type_info_below(acc_location, "FIELD")
 
 measures
 ```
 
 ```
-#> # A tibble: 1 × 4
-#>   id                    label           type    location
-#>   <chr>                 <chr>           <chr>   <chr>
-#> 1 str:count:ACC:V_F_ACC ACC claimant... MEASURE https://.../str:count:ACC:V_F_ACC
+#> # A tibble: 1 × 3
+#>   id                    label                      location
+#>   <chr>                 <chr>                      <chr>
+#> 1 str:count:ACC:V_F_ACC Alternative Claimant Count https://...
 ```
 
 ```{r show-fields}
@@ -96,14 +98,18 @@ fields |> select(id, label, location)
 ```
 
 ```
-#> # A tibble: 8 × 3
-#>   id                                    label                          location
-#>   <chr>                                 <chr>                          <chr>
-#> 1 str:field:ACC:V_F_ACC:AGE             Age of Claimant (Single Years) https://...
-#> 2 str:field:ACC:V_F_ACC:EMP             Employment Indicator           https://...
-#> 3 str:field:ACC:V_F_ACC:WARD_CODE       Region/Country                 https://...
-#> 4 str:field:ACC:F_ACC_DATE_new:DATE_NAME Month                         https://...
-#> ...
+#> # A tibble: 9 × 3
+#>   id                                     label                                  location
+#>   <chr>                                  <chr>                                  <chr>
+#> 1 str:field:ACC:F_ACC_DATE_new:DATE_NAME Month                                  https://...
+#> 2 str:field:ACC:V_F_ACC:AGE              Age (bands and single year)            https://...
+#> 3 str:field:ACC:V_F_ACC:CCSEX            Gender                                 https://...
+#> 4 str:field:ACC:V_F_ACC:GROUP            Benefit Group                          https://...
+#> 5 str:field:ACC:V_F_ACC:EMP              Employment Indicator                   https://...
+#> 6 str:field:ACC:V_F_ACC:WARD_CODE        National - Regional - LA - Wards       https://...
+#> 7 str:field:ACC:V_F_ACC:UK_COA           National - Regional - LAs - UK         https://...
+#> 8 str:field:ACC:V_F_ACC:PARLC_CODE       Westminster Parliamentary Constituency  https://...
+#> 9 str:field:ACC:V_F_ACC:GB_COA           National - Regional - LA - COAs - GB   https://...
 ```
 
 ## Step 4 – Inspect the values for a field
@@ -113,7 +119,7 @@ valuesets, then step down again to see the individual values.
 
 ```{r get-valuesets}
 age_location <- fields |>
-  filter(label == "Age of Claimant (Single Years)") |>
+  filter(label == "Age (bands and single year)") |>
   pull(location)
 
 # One level down: valuesets
@@ -123,14 +129,15 @@ age_valuesets |> select(id, label, location)
 ```
 
 ```
-#> # A tibble: 1 × 3
-#>   id                                        label          location
-#>   <chr>                                     <chr>          <chr>
-#> 1 str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE Single years   https://...
+#> # A tibble: 2 × 3
+#>   id                                            label    location
+#>   <chr>                                         <chr>    <chr>
+#> 1 str:valueset:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE Age      https://...
+#> 2 str:valueset:ACC:V_F_ACC:AGE:C_ACC_AGE_BAND   Age Band https://...
 ```
 
 ```{r get-values}
-# Two levels down: individual values
+# Two levels down: individual values (using the first valueset – single years)
 age_values <- get_next_level_info(age_valuesets$location[[1]])
 
 age_values |> select(id, label) |> head(10)
@@ -143,7 +150,13 @@ age_values |> select(id, label) |> head(10)
 #> 1 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16  16
 #> 2 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17  17
 #> 3 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:18  18
-#> ...
+#> 4 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:19  19
+#> 5 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:20  20
+#> 6 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:21  21
+#> 7 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:22  22
+#> 8 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:23  23
+#> 9 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:24  24
+#> 10 str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:25 25
 ```
 
 Repeat for any other fields you want to include in your query.
@@ -156,23 +169,23 @@ row per value. The columns must be named `database_label`, `measure_label`,
 
 ```{r build-labels-tbl}
 my_query <- tribble(
-  ~database_label,             ~measure_label,    ~field_label,
-  ~valueset_label,                          ~value_label,
+  ~database_label,              ~measure_label,
+  ~field_label,                               ~valueset_label, ~value_label,
   # Age field – three individual years
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Age of Claimant (Single Years)", "Single years", "16",
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Age of Claimant (Single Years)", "Single years", "17",
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Age of Claimant (Single Years)", "Single years", "18",
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "Age (bands and single year)", "Age",        "16",
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "Age (bands and single year)", "Age",        "17",
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "Age (bands and single year)", "Age",        "18",
   # Geography field – England only
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Region/Country", "Countries", "England",
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "National - Regional - LA - Wards", "Country", "England",
   # Date field – two months
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Month", "Month", "August 2022",
-  "Attendance Allowance (ACC)", "ACC claimant count",
-  "Month", "Month", "August 2023"
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "Month",                      "Month",       "August 2022",
+  "Alternative Claimant Count", "Alternative Claimant Count",
+  "Month",                      "Month",       "August 2023"
 )
 ```
 
@@ -191,14 +204,14 @@ spec_tbl |> select(field_id, value_id, value_label)
 
 ```
 #> # A tibble: 6 × 3
-#>   field_id                              value_id                               value_label
-#>   <chr>                                 <chr>                                  <chr>
-#> 1 str:field:ACC:V_F_ACC:AGE             str:value:...:C_ACC_SINGLE_AGE:16     16
-#> 2 str:field:ACC:V_F_ACC:AGE             str:value:...:C_ACC_SINGLE_AGE:17     17
-#> 3 str:field:ACC:V_F_ACC:AGE             str:value:...:C_ACC_SINGLE_AGE:18     18
-#> 4 str:field:ACC:V_F_ACC:WARD_CODE       str:value:...:WARD_CODE:...:England   England
-#> 5 str:field:ACC:F_ACC_DATE_new:DATE_NAME str:value:...:DATE_NAME:...:202208   August 2022
-#> 6 str:field:ACC:F_ACC_DATE_new:DATE_NAME str:value:...:DATE_NAME:...:202308   August 2023
+#>   field_id                               value_id                                                           value_label
+#>   <chr>                                  <chr>                                                              <chr>
+#> 1 str:field:ACC:V_F_ACC:AGE              str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:16                     16
+#> 2 str:field:ACC:V_F_ACC:AGE              str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:17                     17
+#> 3 str:field:ACC:V_F_ACC:AGE              str:value:ACC:V_F_ACC:AGE:C_ACC_SINGLE_AGE:18                     18
+#> 4 str:field:ACC:V_F_ACC:WARD_CODE        str:value:ACC:V_F_ACC:WARD_CODE:V_C_MASTERGEOG11_COUNTRY_TO_UK:E92000001  England
+#> 5 str:field:ACC:F_ACC_DATE_new:DATE_NAME str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:202208           August 2022
+#> 6 str:field:ACC:F_ACC_DATE_new:DATE_NAME str:value:ACC:F_ACC_DATE_new:DATE_NAME:C_ACC_DATE:202308           August 2023
 ```
 
 ## Step 7 – Export as JSON
@@ -227,10 +240,10 @@ head(my_data)
 ```
 
 ```
-#>   V_F_ACC   AGE DATE_NAME    WARD_CODE value
-#>   <chr>     <chr> <chr>      <chr>     <dbl>
-#> 1 ACC count 16   August 2022 England    1042
-#> 2 ACC count 16   August 2023 England    1089
+#>   measure_label              AGE DATE_NAME    WARD_CODE value
+#>   <chr>                      <chr> <chr>      <chr>     <dbl>
+#> 1 Alternative Claimant Count 16   August 2022 England    1042
+#> 2 Alternative Claimant Count 16   August 2023 England    1089
 #> ...
 ```
 

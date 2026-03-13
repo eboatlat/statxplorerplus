@@ -58,12 +58,12 @@ spec_tbl |>
 
 ```
 #> # A tibble: 4 × 2
-#>   field_label                        n
-#>   <chr>                          <int>
-#> 1 Age of Claimant (Single Years)    51
-#> 2 Employment Indicator               3
-#> 3 Month                              3
-#> 4 Region/Country                     2
+#>   field_label                          n
+#>   <chr>                            <int>
+#> 1 Age (bands and single year)         51
+#> 2 Employment Indicator                 3
+#> 3 Month                                3
+#> 4 National - Regional - LA - Wards     2
 ```
 
 ## Step 3 – Filter to age 16 only
@@ -74,7 +74,7 @@ unchanged:
 ```{r subset}
 spec_tbl_age16 <- spec_tbl |>
   filter(
-    field_label != "Age of Claimant (Single Years)" |
+    field_label != "Age (bands and single year)" |
       value_code == "16"
   )
 
@@ -84,17 +84,17 @@ spec_tbl_age16 |>
 
 ```
 #> # A tibble: 9 × 3
-#>   field_label                    value_label  value_code
-#>   <chr>                          <chr>        <chr>
-#> 1 Age of Claimant (Single Years) 16           16
-#> 2 Employment Indicator           Employed     0
-#> 3 Employment Indicator           Unemployed   1
-#> 4 Employment Indicator           Unknown      99
-#> 5 Month                          August 2013  201308
-#> 6 Month                          August 2019  201908
-#> 7 Month                          August 2022  202208
-#> 8 Region/Country                 England      E92000001
-#> 9 Region/Country                 Wales        W92000004
+#>   field_label                      value_label       value_code
+#>   <chr>                            <chr>             <chr>
+#> 1 Age (bands and single year)      16                16
+#> 2 Month                            August 2013       201308
+#> 3 Month                            August 2019       201908
+#> 4 Month                            August 2022       202208
+#> 5 National - Regional - LA - Wards England           E92000001
+#> 6 National - Regional - LA - Wards Wales             W92000004
+#> 7 Employment Indicator             Not in employment 0
+#> 8 Employment Indicator             In employment     1
+#> 9 Employment Indicator             Not available     99
 ```
 
 The spec table now has just one age row instead of 51, which will make the
@@ -109,11 +109,19 @@ acc_age16
 ```
 
 ```
-#>   V_F_ACC   AGE DATE_NAME    WARD_CODE EMP        value
-#>   <chr>     <chr> <chr>      <chr>     <chr>      <dbl>
-#> 1 ACC count 16   August 2013 England   Employed      12
-#> 2 ACC count 16   August 2013 England   Unemployed     3
-#> 3 ACC count 16   August 2013 Wales     Employed       2
+#> # A tibble: 18 × 5
+#>    `Age (bands and single year)` Month       `National - Regional - LA - Wards` `Employment Indicator` `Alternative Claimant Count`
+#>    <chr>                         <chr>       <chr>                              <chr>                                         <dbl>
+#>  1 16                            August 2013 England                            Not in employment                               329
+#>  2 16                            August 2013 England                            In employment                                    11
+#>  3 16                            August 2013 England                            Not available                                     0
+#>  4 16                            August 2013 Wales                              Not in employment                                22
+#>  5 16                            August 2013 Wales                              In employment                                     0
+#>  6 16                            August 2013 Wales                              Not available                                     0
+#>  7 16                            August 2019 England                            Not in employment                               322
+#>  8 16                            August 2019 England                            In employment                                    22
+#>  9 16                            August 2019 England                            Not available                                     0
+#> 10 16                            August 2019 Wales                              Not in employment                                34
 #> ...
 ```
 
