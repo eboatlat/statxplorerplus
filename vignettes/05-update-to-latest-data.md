@@ -13,17 +13,15 @@ This vignette shows the full workflow:
 
 1.  Convert a JSON to a spec table.
 2.  Inspect which dates are currently in the spec.
-3.  Update the spec to include all available dates not already in the
+3.  Update the spec to include all dates newer than those already in the
     spec.
-4.  (Optional) add groupings to the updated dates.
-5.  Fetch the updated data.
+4.  Fetch the updated data.
 
 ## Step 1 – Load the package and set your API key
 
 ``` r
 library(statxplorerplus)
 library(dplyr)
-library(stringr)
 
 load_api_key("path/to/apikey.txt")
 ```
@@ -56,20 +54,14 @@ spec_tbl |>
 The spec only covers three months. Many other months available in the
 database are not included.
 
-## Step 3 – Update to include all available dates
+## Step 3 – Update to include newer dates
 
 `update_spec_table_to_latest_data()` queries the Stat-Xplore schema for
-the date field and appends any date values not already in the spec.
-
-Setting `.add_only_newer_dates = TRUE` only appends dates that are newer
-than the latest date already in the spec. Setting it to `FALSE` appends
-all available dates not already present, including historical ones.
+the date field and appends any date values that are newer than the latest
+date already in the spec.
 
 ``` r
-spec_tbl_updated <- update_spec_table_to_latest_data(
-  spec_tbl,
-  .add_only_newer_dates = FALSE
-)
+spec_tbl_updated <- update_spec_table_to_latest_data(spec_tbl)
 ```
 
 ### Inspect the updated dates
@@ -80,40 +72,19 @@ spec_tbl_updated |>
   select(value_label)
 ```
 
-    #> # A tibble: 116 × 1
+    #> # A tibble: 3 × 1
     #>    value_label
     #>    <chr>
     #>  1 August 2013
     #>  2 August 2019
     #>  3 August 2022
-    #>  4 January 2013
-    #>  5 February 2013
-    #>  6 March 2013
-    #>  ...
 
-The spec now covers all 116 months available in the database.
+The spec is unchanged because the Alternative Claimant Count database
+currently has data up to August 2022, which is already the latest date
+in the spec. In practice, once new months are released on Stat-Xplore,
+running this step would automatically append them.
 
-## Step 4 – (Optional) add a grouping for the date field
-
-You can classify the updated dates into meaningful periods before
-fetching. For example, group by era:
-
-``` r
-spec_tbl_updated <- spec_tbl_updated |>
-  mutate(
-    value_group = case_when(
-      field_label == "Month" &
-        str_detect(value_label, "2013|2014|2015|2016|2017|2018") ~
-          "Pre-2019",
-      field_label == "Month" &
-        str_detect(value_label, "2019|2020|2021|2022") ~
-          "2019 onwards",
-      TRUE ~ NA_character_
-    )
-  )
-```
-
-## Step 5 – Fetch the updated data
+## Step 4 – Fetch the updated data
 
 ``` r
 acc_updated <- fetch_data_from_spec_table(spec_tbl_updated)
@@ -121,11 +92,15 @@ acc_updated <- fetch_data_from_spec_table(spec_tbl_updated)
 head(acc_updated)
 ```
 
-    #>   `Age (bands and single year)` `National - Regional - LA - Wards`
-    #>   <chr>                         <chr>
-    #> 1 16                            England
-    #> 2 16                            England
-    #> ...
+    #> # A tibble: 6 × 5
+    #>   Month       `Age (bands and single year)` `Employment Indicator` `National - Regional - LA - Wards` `Alternative Claimant Count`
+    #>   <chr>       <chr>                         <chr>                  <chr>                                                     <dbl>
+    #> 1 August 2013 16                            Not in employment      England                                                     329
+    #> 2 August 2013 16                            Not in employment      Wales                                                        22
+    #> 3 August 2013 16                            In employment          England                                                      11
+    #> 4 August 2013 16                            In employment          Wales                                                         0
+    #> 5 August 2013 16                            Not available          England                                                       0
+    #> 6 August 2013 16                            Not available          Wales                                                         0
 
 ## Saving the updated spec back to JSON
 
@@ -147,7 +122,6 @@ export_json(
 |----|----|----|
 | 1 | `convert_json_to_spec_table()` | Parse JSON → spec table |
 | 2 | `add_labels_and_locations_to_spec_table()` | Add human-readable labels |
-| 3 | `update_spec_table_to_latest_data()` | Append available date values from schema |
-| 4 | `mutate(value_group = ...)` | *(optional)* group the updated dates |
-| 5 | `fetch_data_from_spec_table()` | Fetch data including new dates |
-| 6 | `convert_spec_table_to_list()` + `export_json()` | *(optional)* save updated spec |
+| 3 | `update_spec_table_to_latest_data()` | Append date values newer than those in the spec |
+| 4 | `fetch_data_from_spec_table()` | Fetch data including new dates |
+| 5 | `convert_spec_table_to_list()` + `export_json()` | *(optional)* save updated spec |
