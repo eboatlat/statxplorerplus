@@ -10,10 +10,14 @@
 #' @param .target_types Character vector of schema types to collect, e.g.
 #'   `c("MEASURE", "FIELD")`.
 #' @param .max_iterations Maximum number of traversal steps.
+#' @param .error_if_empty If `TRUE` (default), error when no records of
+#'   `.target_types` are found after full traversal. Set to `FALSE` to return
+#'   an empty tibble instead.
 #'
 #' @return A tibble of matching schema records.
 #' @export
-get_target_type_info_below <- function(.url, .target_types, .max_iterations = 10) {
+get_target_type_info_below <- function(.url, .target_types, .max_iterations = 10,
+                                       .error_if_empty = TRUE) {
   target_info <- tibble::tibble()
   paths <- .url
 
@@ -26,11 +30,20 @@ get_target_type_info_below <- function(.url, .target_types, .max_iterations = 10
       nextlevel |> dplyr::filter(type %in% .target_types)
     )
 
+    # VALUE nodes are leaves and never contain other target types
     paths <- nextlevel |>
-      dplyr::filter(!type %in% .target_types) |>
+      dplyr::filter(!type %in% .target_types, type != "VALUE") |>
       dplyr::pull(location)
 
     if (is.vector(paths) && length(paths) == 0) break
+  }
+
+  if (.error_if_empty && nrow(target_info) == 0) {
+    stop(paste0(
+      "No schema records of type ",
+      paste(sQuote(.target_types), collapse = " or "),
+      " found below the supplied URL. Check that the type string(s) are correct."
+    ))
   }
 
   target_info
