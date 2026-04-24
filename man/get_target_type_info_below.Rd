@@ -4,7 +4,12 @@
 \alias{get_target_type_info_below}
 \title{Traverse down from a schema URL and collect records of chosen types}
 \usage{
-get_target_type_info_below(.url, .target_types, .max_iterations = 10)
+get_target_type_info_below(
+  .url,
+  .target_types,
+  .max_iterations = 10,
+  .error_if_empty = TRUE
+)
 }
 \arguments{
 \item{.url}{A schema \code{location} URL to start from (e.g. a database location).}
@@ -13,6 +18,10 @@ get_target_type_info_below(.url, .target_types, .max_iterations = 10)
 \code{c("MEASURE", "FIELD")}.}
 
 \item{.max_iterations}{Maximum number of traversal steps.}
+
+\item{.error_if_empty}{If \code{TRUE} (default), error when no records of
+\code{.target_types} are found after full traversal. Set to \code{FALSE} to return
+an empty tibble instead.}
 }
 \value{
 A tibble of matching schema records.

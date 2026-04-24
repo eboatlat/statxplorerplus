@@ -4,13 +4,17 @@
 \alias{get_next_level_info}
 \title{Get the next level of schema children below a URL}
 \usage{
-get_next_level_info(url, error_if_next_level_empty = TRUE)
+get_next_level_info(url, error_if_next_level_empty = TRUE, pages = 10)
 }
 \arguments{
 \item{url}{A schema URL to fetch.}
 
 \item{error_if_next_level_empty}{If \code{TRUE} (default), error when the response
 contains no \code{children}. If \code{FALSE}, return an empty tibble.}
+
+\item{pages}{Maximum number of pages to follow (passed to \code{\link[=get_schema_info]{get_schema_info()}}).
+Increase this for endpoints with large numbers of children (e.g. LSOA
+geographies).}
 }
 \value{
 A tibble of child records (with columns such as \code{id}, \code{label},

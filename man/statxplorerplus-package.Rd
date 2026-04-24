@@ -13,13 +13,19 @@ from the Department for Work and Pensions Stat-Xplore API.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://example.com/statxplorerplus}
-  \item Report bugs at \url{https://example.com/statxplorerplus/issues}
+  \item \url{https://eboatlat.github.io/statxplorerplus/}
+  \item \url{https://github.com/eboatlat/statxplorerplus}
+  \item Report bugs at \url{https://github.com/eboatlat/statxplorerplus/issues}
 }
 
 }
 \author{
 \strong{Maintainer}: Eduin Latimer \email{Eduin.Latimer@ifs.org.uk}
+
+Authors:
+\itemize{
+  \item Oli Hawkins
+}
 
 }
 \keyword{internal}

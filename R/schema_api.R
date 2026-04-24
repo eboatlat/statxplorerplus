@@ -79,12 +79,16 @@ get_schema_info <- function(url, pages = 10) {
 #' @param url A schema URL to fetch.
 #' @param error_if_next_level_empty If `TRUE` (default), error when the response
 #'   contains no `children`. If `FALSE`, return an empty tibble.
+#' @param pages Maximum number of pages to follow (passed to [get_schema_info()]).
+#'   Increase this for endpoints with large numbers of children (e.g. LSOA
+#'   geographies).
 #'
 #' @return A tibble of child records (with columns such as `id`, `label`,
 #'   `type`, `location`, ...), or an empty tibble.
 #' @export
-get_next_level_info <- function(url, error_if_next_level_empty = TRUE) {
-  schema_info <- get_schema_info(url)
+get_next_level_info <- function(url, error_if_next_level_empty = TRUE,
+                                pages = 10) {
+  schema_info <- get_schema_info(url, pages = pages)
   out <- schema_info |> dplyr::select(dplyr::contains("child"))
 
   if (ncol(out) == 0) {

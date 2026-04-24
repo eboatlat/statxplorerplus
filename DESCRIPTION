@@ -1,7 +1,7 @@
 Package: statxplorerplus
 Type: Package
 Title: Tools for Stat-Xplore Style Specs, Labels, and JSON Conversion
-Version: 0.5.2
+Version: 0.5.3
 Authors@R: c(
     person(given = "Eduin", family = "Latimer", role = c("aut", "cre"),
            email = "Eduin.Latimer@ifs.org.uk"),

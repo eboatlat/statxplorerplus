@@ -7,7 +7,9 @@
 convert_labels_table_to_spec_table(
   .input_tbl,
   .db_tbl = NULL,
-  .max_distance = 1
+  .max_distance = 1,
+  .db_child_info = NULL,
+  .pot_valueset_info = NULL
 )
 }
 \arguments{
@@ -19,6 +21,15 @@ and either \code{value_label} or \code{value_code} (depending on the dataset).}
 avoids an extra API call.}
 
 \item{.max_distance}{Maximum string distance allowed for matches.}
+
+\item{.db_child_info}{Optional pre-fetched result of
+\code{\link[=get_target_type_info_below]{get_target_type_info_below()}} for \code{c("MEASURE", "COUNT", "FIELD")} with
+columns prefixed \code{child_}; avoids a repeated schema fetch when calling
+this function in a loop.}
+
+\item{.pot_valueset_info}{Optional pre-fetched valueset info tibble (as
+built internally from field locations); avoids repeated schema fetches
+when calling this function in a loop.}
 }
 \value{
 A spec table (tibble) with \code{database_id}, \code{measure_id}, \code{field_id},
